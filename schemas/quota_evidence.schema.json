@@ -1,0 +1,318 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://local-agent-dispatch.invalid/schemas/quota_evidence.schema.json",
+  "title": "QuotaEvidenceBundle",
+  "description": "Versioned quota-evidence bundle for the shared opencode.go pool. Unknown remaining balances are null and must never be mapped to zero or full. Model-specific price/usage multiplier metadata is separate from pool-level remaining quota.",
+  "type": "object",
+  "definitions": {
+    "quota_evidence_record": {
+      "type": "object",
+      "properties": {
+        "schema_version": { "type": "integer", "const": 1 },
+        "source": {
+          "enum": ["console", "api", "receipt", "history", "runtime_error", "manual"]
+        },
+        "observed_at_utc": { "type": "string", "format": "date-time" },
+        "pool_id": { "const": "opencode.go" },
+        "scope_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "window": {
+          "type": ["string", "null"],
+          "enum": ["five_hour", "weekly", "monthly", null]
+        },
+        "remaining_percent": {
+          "type": ["number", "null"],
+          "minimum": 0.0,
+          "maximum": 100.0
+        },
+        "remaining_amount": { "type": ["number", "null"], "minimum": 0.0 },
+        "cap_amount": { "type": ["number", "null"], "exclusiveMinimum": 0.0 },
+        "reset_at_utc": { "type": ["string", "null"], "format": "date-time" },
+        "confidence": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "ttl_seconds": { "type": "integer", "exclusiveMinimum": 0 },
+        "discrepancy": { "type": "boolean" },
+        "attribution": { "enum": ["exclusive", "confounded", "unknown"] },
+        "exact_balance": { "type": "boolean" },
+        "overage_fallback_state": {
+          "enum": ["unknown", "enabled", "disabled"]
+        },
+        "note": { "type": ["string", "null"] },
+        "event": { "$ref": "#/definitions/runtime_event" }
+      },
+      "required": [
+        "schema_version",
+        "source",
+        "observed_at_utc",
+        "pool_id",
+        "scope_hash",
+        "window",
+        "remaining_percent",
+        "remaining_amount",
+        "reset_at_utc",
+        "confidence",
+        "ttl_seconds",
+        "discrepancy",
+        "attribution"
+      ]
+    },
+    "console_snapshot": {
+      "type": "object",
+      "description": "Explicit, user-supplied read-only console export. Credential-like keys are refused by the importer before any value is read.",
+      "properties": {
+        "schema_version": { "type": "integer", "const": 1 },
+        "source": { "const": "console" },
+        "pool_id": { "const": "opencode.go" },
+        "provider_id": { "const": "opencode-go" },
+        "scope_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "observed_at_utc": { "type": "string", "format": "date-time" },
+        "records": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/quota_evidence_record" }
+        },
+        "overage_fallback_state": {
+          "enum": ["unknown", "enabled", "disabled"]
+        },
+        "zen_balance": {
+          "type": ["object", "null"],
+          "description": "Separate Zen wallet fallback; it is not free OpenCode Go quota.",
+          "properties": {
+            "state": { "type": "string" },
+            "amount_usd": { "type": ["number", "null"] },
+            "currency": { "type": "string" },
+            "is_free_quota": { "const": false },
+            "note": { "type": "string" }
+          }
+        },
+        "validation": {
+          "type": "object",
+          "properties": {
+            "unknown_windows": { "type": "array", "items": { "type": "string" } },
+            "invalid_windows": { "type": "array", "items": { "type": "string" } },
+            "discrepancy_windows": { "type": "array", "items": { "type": "string" } },
+            "contradictory_window_pairs": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 2,
+                "maxItems": 2
+              }
+            }
+          }
+        },
+        "security": {
+          "type": "object",
+          "properties": {
+            "credential_values_read": { "const": false },
+            "sensitive_keys_refused": { "type": "array", "items": { "type": "string" } },
+            "redaction": { "type": "string" }
+          }
+        }
+      },
+      "required": [
+        "schema_version",
+        "source",
+        "pool_id",
+        "scope_hash",
+        "observed_at_utc",
+        "records",
+        "overage_fallback_state",
+        "validation",
+        "security"
+      ]
+    },
+    "spend_bounds": {
+      "type": "object",
+      "description": "Historical spend evidence only; never a remaining balance.",
+      "properties": {
+        "schema_version": { "type": "integer", "const": 1 },
+        "source": { "const": "receipt" },
+        "pool_id": { "const": "opencode.go" },
+        "scope_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "observed_at_utc": { "type": "string", "format": "date-time" },
+        "exact_balance_unavailable": { "const": true },
+        "kind": { "const": "historical_spend_evidence" },
+        "note": { "type": "string" },
+        "windows": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "count": { "type": "integer" },
+              "spend_min_usd": { "type": ["number", "null"] },
+              "spend_max_usd": { "type": ["number", "null"] },
+              "cap_amount": { "type": ["number", "null"] },
+              "remaining_percent_bounds": {
+                "type": "object",
+                "properties": {
+                  "lower": { "type": ["number", "null"] },
+                  "upper": { "type": ["number", "null"] }
+                }
+              },
+              "attribution": { "enum": ["exclusive", "confounded", "unknown"] },
+              "overlapping_attribution": { "type": "boolean" },
+              "note": { "type": "string" }
+            }
+          }
+        }
+      },
+      "required": [
+        "schema_version",
+        "source",
+        "pool_id",
+        "scope_hash",
+        "observed_at_utc",
+        "exact_balance_unavailable",
+        "windows"
+      ]
+    },
+    "runtime_event": {
+      "type": "object",
+      "description": "Classified runtime failure. Quota/rate/auth events act on the shared opencode.go pool while retaining the exact model and variant.",
+      "properties": {
+        "model_id": { "type": "string" },
+        "variant": { "type": ["string", "null"] },
+        "pool_id": { "const": "opencode.go" },
+        "kind": {
+          "enum": ["rate_limit", "quota", "auth", "capability", "location_restricted", "unclassified"]
+        },
+        "pool_level": { "type": "boolean" },
+        "status_hint": { "type": ["string", "null"] },
+        "window_hint": {
+          "type": ["string", "null"],
+          "enum": ["five_hour", "weekly", "monthly", null]
+        },
+        "reset_at_utc": { "type": ["string", "null"], "format": "date-time" },
+        "reset_estimated": { "type": "boolean" },
+        "retryable": { "type": "boolean" },
+        "route_change_required": { "type": "boolean" },
+        "recovery_action": { "type": "string" },
+        "redacted_text": { "type": "string" }
+      },
+      "required": [
+        "model_id",
+        "pool_id",
+        "kind",
+        "pool_level",
+        "reset_at_utc",
+        "reset_estimated",
+        "redacted_text"
+      ]
+    },
+    "pilot_decision": {
+      "type": "object",
+      "description": "Conservative pilot/cap decision. Catalog visibility alone never sets ready_claim; a bounded pilot carries per-lane caps and a reserve.",
+      "properties": {
+        "schema_version": { "type": "integer", "const": 1 },
+        "pool_id": { "const": "opencode.go" },
+        "balance_state": { "enum": ["known", "unknown"] },
+        "effective_remaining_percent": { "type": ["number", "null"] },
+        "health_band": { "type": "string" },
+        "catalog_visible": { "type": "boolean" },
+        "catalog_visibility_alone_does_not_set_ready": { "const": true },
+        "pilot_allowed": { "type": "boolean" },
+        "ready_claim": { "type": "boolean" },
+        "blocked": { "type": "boolean" },
+        "per_lane_caps": {
+          "type": "object",
+          "properties": {
+            "cost_cap_usd": { "type": ["number", "null"] },
+            "token_cap": { "type": ["integer", "null"] },
+            "max_attempts": { "type": "integer" }
+          }
+        },
+        "reserve": {
+          "type": "object",
+          "properties": {
+            "percent": { "type": "number" },
+            "note": { "type": "string" }
+          }
+        },
+        "unknown_mapped_to_zero": { "const": false },
+        "unknown_mapped_to_full": { "const": false },
+        "note": { "type": "string" },
+        "reasons": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": [
+        "schema_version",
+        "pool_id",
+        "balance_state",
+        "pilot_allowed",
+        "ready_claim",
+        "blocked",
+        "per_lane_caps",
+        "unknown_mapped_to_zero",
+        "unknown_mapped_to_full"
+      ]
+    }
+  },
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "kind": { "const": "opencode_go_quota_evidence" },
+    "fetched_at_utc": { "type": "string", "format": "date-time" },
+    "pool_id": { "const": "opencode.go" },
+    "provider_id": { "const": "opencode-go" },
+    "scope_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "balance_state": { "enum": ["known", "unknown"] },
+    "records": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/quota_evidence_record" }
+    },
+    "spend_bounds": { "$ref": "#/definitions/spend_bounds" },
+    "overage_fallback_state": {
+      "enum": ["unknown", "enabled", "disabled"]
+    },
+    "runtime_events": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/runtime_event" }
+    },
+    "model_usage_multipliers": {
+      "type": "object",
+      "description": "Model-specific cost/usage multiplier metadata; separate from pool-level remaining quota.",
+      "additionalProperties": { "type": "number", "minimum": 0.0 }
+    },
+    "pilot": { "$ref": "#/definitions/pilot_decision" },
+    "security": {
+      "type": "object",
+      "properties": {
+        "model_prompt_sent": { "const": false },
+        "credential_values_inspected": { "const": false },
+        "credential_values_emitted": { "const": false },
+        "undocumented_balance_endpoint_called": { "const": false },
+        "documented_usage_endpoint_called": { "type": "boolean" },
+        "usage_api_credential_source": { "type": ["string", "null"] }
+      },
+      "required": [
+        "model_prompt_sent",
+        "credential_values_inspected",
+        "credential_values_emitted",
+        "undocumented_balance_endpoint_called"
+      ]
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "ok": { "type": "boolean" },
+          "returncode": { "type": ["integer", "null"] },
+          "timed_out": { "type": "boolean" },
+          "error": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "note": { "type": "string" }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "fetched_at_utc",
+    "pool_id",
+    "provider_id",
+    "scope_hash",
+    "balance_state",
+    "records",
+    "pilot",
+    "security"
+  ]
+}

@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "local-agent-dispatch-cli"
+version = "0.1.0a6"
+description = "Portable, evidence-gated control plane for local and remote agent dispatch"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+lad = "local_agent_dispatch.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.data-files]
+"share/local-agent-dispatch" = [
+  "SKILL.md",
+  "README.md",
+  "CONTRIBUTING.md",
+  "SECURITY.md",
+  "CHANGELOG.md",
+]
+"share/local-agent-dispatch/scripts" = ["scripts/*.py", "scripts/*.sh"]
+"share/local-agent-dispatch/schemas" = ["schemas/*.json"]
+"share/local-agent-dispatch/docs" = ["docs/*.md"]
+"share/local-agent-dispatch/references" = ["references/*.md"]
+"share/local-agent-dispatch/templates" = ["templates/*.md"]

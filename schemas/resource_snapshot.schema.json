@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "local-agent-dispatch/resource_snapshot.schema.json",
+  "title": "ResourceSnapshot v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "api_version", "snapshot_id", "host_id", "worker_id",
+    "cpu", "ram", "swap", "cgroup", "mounts", "gpus", "owned_processes",
+    "observed_at", "ttl_seconds", "source", "confidence", "sequence",
+    "idempotency_key", "fence_token"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "api_version": {"const": "local-agent-dispatch.worker.v1"},
+    "snapshot_id": {"$ref": "#/$defs/id"},
+    "host_id": {"$ref": "#/$defs/id"},
+    "worker_id": {"$ref": "#/$defs/id"},
+    "cpu": {"$ref": "#/$defs/cpu"},
+    "ram": {"$ref": "#/$defs/memory"},
+    "swap": {"$ref": "#/$defs/memory"},
+    "cgroup": {"$ref": "#/$defs/cgroup"},
+    "mounts": {"type": "array", "items": {"$ref": "#/$defs/mount"}},
+    "gpus": {"type": "array", "items": {"$ref": "#/$defs/gpu"}},
+    "owned_processes": {
+      "type": "array", "items": {"$ref": "#/$defs/owned_process"}
+    },
+    "observed_at": {"type": "string", "format": "date-time"},
+    "ttl_seconds": {"type": ["integer", "null"], "minimum": 1},
+    "source": {"type": "string", "minLength": 1},
+    "confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+    "sequence": {"type": "integer", "minimum": 1},
+    "idempotency_key": {"$ref": "#/$defs/id"},
+    "fence_token": {"type": "integer", "minimum": 1}
+  },
+  "$defs": {
+    "id": {
+      "type": "string", "minLength": 1, "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:@-]{0,127}$"
+    },
+    "nonnegative_integer_or_null": {"type": ["integer", "null"], "minimum": 0},
+    "nonnegative_number_or_null": {"type": ["number", "null"], "minimum": 0},
+    "cpu": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "capacity_cores", "allocatable_cores", "available_cores", "utilization_percent"
+      ],
+      "properties": {
+        "capacity_cores": {"$ref": "#/$defs/nonnegative_number_or_null"},
+        "allocatable_cores": {"$ref": "#/$defs/nonnegative_number_or_null"},
+        "available_cores": {"$ref": "#/$defs/nonnegative_number_or_null"},
+        "utilization_percent": {"type": ["number", "null"], "minimum": 0, "maximum": 100}
+      }
+    },
+    "memory": {
+      "type": "object", "additionalProperties": false,
+      "required": ["capacity_bytes", "allocatable_bytes", "available_bytes", "used_bytes"],
+      "properties": {
+        "capacity_bytes": {"$ref": "#/$defs/nonnegative_integer_or_null"},
+        "allocatable_bytes": {"$ref": "#/$defs/nonnegative_integer_or_null"},
+        "available_bytes": {"$ref": "#/$defs/nonnegative_integer_or_null"},
+        "used_bytes": {"$ref": "#/$defs/nonnegative_integer_or_null"}
+      }
+    },
+    "cgroup": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "cpu_quota_cores", "memory_limit_bytes", "memory_current_bytes",
+        "swap_limit_bytes", "swap_current_bytes"
+      ],
+      "properties": {
+        "cpu_quota_cores": {"$ref": "#/$defs/nonnegative_number_or_null"},
+        "memory_limit_bytes": {"$ref": "#/$defs/nonnegative_integer_or_null"},
+        "memory_current_bytes": {"$ref": "#/$defs/nonnegative_integer_or_null"},
+        "swap_limit_bytes": {"$ref": "#/$defs/nonnegative_integer_or_null"},
+        "swap_current_bytes": {"$ref": "#/$defs/nonnegative_integer_or_null"}
+      }
+    },
+    "mount": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "mount_path", "device", "fs_type", "writable", "capacity_bytes",
+        "available_bytes", "total_inodes", "free_inodes"
+      ],
+      "properties": {
+        "mount_path": {"type": "string", "minLength": 1},
+        "device": {"type": ["string", "null"], "minLength": 1},
+        "fs_type": {"type": ["string", "null"], "minLength": 1},
+        "writable": {"type": ["boolean", "null"]},
+        "capacity_bytes": {"$ref": "#/$defs/nonnegative_integer_or_null"},
+        "available_bytes": {"$ref": "#/$defs/nonnegative_integer_or_null"},
+        "total_inodes": {"$ref": "#/$defs/nonnegative_integer_or_null"},
+        "free_inodes": {"$ref": "#/$defs/nonnegative_integer_or_null"}
+      }
+    },
+    "gpu": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "gpu_id", "model", "memory_capacity_bytes", "memory_available_bytes",
+        "utilization_percent"
+      ],
+      "properties": {
+        "gpu_id": {"$ref": "#/$defs/id"},
+        "model": {"type": ["string", "null"], "minLength": 1},
+        "memory_capacity_bytes": {"$ref": "#/$defs/nonnegative_integer_or_null"},
+        "memory_available_bytes": {"$ref": "#/$defs/nonnegative_integer_or_null"},
+        "utilization_percent": {"type": ["number", "null"], "minimum": 0, "maximum": 100}
+      }
+    },
+    "owned_process": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "process_id", "attempt_id", "pid", "started_at", "fence_token",
+        "rss_bytes", "gpu_memory_bytes"
+      ],
+      "properties": {
+        "process_id": {"$ref": "#/$defs/id"},
+        "attempt_id": {"$ref": "#/$defs/id"},
+        "pid": {"type": "integer", "minimum": 1},
+        "started_at": {"type": "string", "format": "date-time"},
+        "fence_token": {"type": "integer", "minimum": 1},
+        "rss_bytes": {"$ref": "#/$defs/nonnegative_integer_or_null"},
+        "gpu_memory_bytes": {"$ref": "#/$defs/nonnegative_integer_or_null"}
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "run_id": "run-20260829-001",
+  "mode": "offline_soak",
+  "evidence_level": "E1",
+  "mission_id": "mission-m1-stability",
+  "source_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "policy_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "capsule_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "segment_seconds": 3600,
+  "planned_end_at": "2026-08-30T00:00:00+00:00",
+  "stop_conditions": {
+    "accepted_task_loss": 0,
+    "duplicate_irreversible_effect": 0,
+    "unowned_process_signal": 0,
+    "oom_or_enospc_unrecorded": 0
+  },
+  "provider_execution": false,
+  "network_execution": false,
+  "validator_id": "continuous-run-validator-v1"
+}

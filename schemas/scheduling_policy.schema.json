@@ -1,0 +1,224 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local-agent-dispatch.invalid/schemas/scheduling_policy.schema.json",
+  "title": "Local Agent Dispatch Scheduling Policy v1",
+  "description": "Provider-free three-layer scheduling policy. Safety constants cannot be disabled by organization or task policy.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "api_version",
+    "safety",
+    "organization",
+    "task"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "api_version": {
+      "const": "local-agent-dispatch.scheduling-policy.v1"
+    },
+    "safety": {
+      "$ref": "#/$defs/safety"
+    },
+    "organization": {
+      "$ref": "#/$defs/organization"
+    },
+    "task": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/task"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:@-]{0,127}$"
+    },
+    "ratio": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "nullableNonNegativeInteger": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "nullableRatio": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "nullablePositiveNumber": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "exclusiveMinimum": 0
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hard_max_concurrency",
+        "min_memory_reserve_bytes",
+        "min_disk_reserve_bytes",
+        "min_quota_reserve_ratio",
+        "max_error_rate",
+        "require_fresh_telemetry",
+        "unknown_concurrency"
+      ],
+      "properties": {
+        "hard_max_concurrency": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "min_memory_reserve_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "min_disk_reserve_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "min_quota_reserve_ratio": {
+          "$ref": "#/$defs/ratio"
+        },
+        "max_error_rate": {
+          "$ref": "#/$defs/ratio"
+        },
+        "require_fresh_telemetry": {
+          "const": true
+        },
+        "unknown_concurrency": {
+          "const": 0
+        }
+      }
+    },
+    "organization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy_id",
+        "revision",
+        "min_concurrency",
+        "max_concurrency",
+        "memory_reserve_bytes",
+        "disk_reserve_bytes",
+        "quota_reserve_ratio",
+        "max_error_rate",
+        "target_latency_seconds",
+        "additive_increase",
+        "decrease_factor",
+        "scale_up_windows",
+        "cooldown_seconds"
+      ],
+      "properties": {
+        "policy_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "min_concurrency": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_concurrency": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "memory_reserve_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "disk_reserve_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "quota_reserve_ratio": {
+          "$ref": "#/$defs/ratio"
+        },
+        "max_error_rate": {
+          "$ref": "#/$defs/ratio"
+        },
+        "target_latency_seconds": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "additive_increase": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "decrease_factor": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "exclusiveMaximum": 1
+        },
+        "scale_up_windows": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "cooldown_seconds": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "preferred_min_concurrency",
+        "preferred_max_concurrency",
+        "memory_reserve_bytes",
+        "disk_reserve_bytes",
+        "quota_reserve_ratio",
+        "max_error_rate",
+        "target_latency_seconds"
+      ],
+      "properties": {
+        "task_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "preferred_min_concurrency": {
+          "$ref": "#/$defs/nullableNonNegativeInteger",
+          "description": "A task-local request that may lower, but never raise, the inherited organization minimum."
+        },
+        "preferred_max_concurrency": {
+          "$ref": "#/$defs/nullableNonNegativeInteger",
+          "description": "A task-local request that may lower, but never raise, the inherited maximum."
+        },
+        "memory_reserve_bytes": {
+          "$ref": "#/$defs/nullableNonNegativeInteger"
+        },
+        "disk_reserve_bytes": {
+          "$ref": "#/$defs/nullableNonNegativeInteger"
+        },
+        "quota_reserve_ratio": {
+          "$ref": "#/$defs/nullableRatio"
+        },
+        "max_error_rate": {
+          "$ref": "#/$defs/nullableRatio"
+        },
+        "target_latency_seconds": {
+          "$ref": "#/$defs/nullablePositiveNumber"
+        }
+      }
+    }
+  }
+}

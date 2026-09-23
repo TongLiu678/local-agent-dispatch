@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local-agent-dispatch.dev/schemas/skill_scaffold_spec.schema.json",
+  "title": "Local Agent Dispatch Skill Scaffold Spec",
+  "description": "Strict provider-free input for creating one inert two-file skill package source.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "name",
+    "version",
+    "description",
+    "instructions"
+  ],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 63,
+      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-((?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\\+([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?$"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 12,
+      "maxLength": 280,
+      "pattern": "^[^\\r\\n\\u0000-\\u001f\\u007f]+$"
+    },
+    "instructions": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 65536,
+      "pattern": "[\\S]"
+    }
+  }
+}

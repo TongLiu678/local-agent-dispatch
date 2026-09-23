@@ -1,0 +1,643 @@
+{
+  "scenario_version": 1,
+  "now": "2026-08-12T12:00:00+00:00",
+  "scenarios": [
+    {
+      "scenario_id": "healthy-single-host",
+      "description": "Baseline: root and a large project mount both probed and fresh. Used to verify path ranking by exact mount evidence and P90 headroom.",
+      "snapshot": {
+        "schema_version": 1,
+        "created_at": "2026-08-12T12:00:00+00:00",
+        "hosts": [
+          {
+            "host_id": "host-healthy",
+            "name": "healthy.local",
+            "os": "linux",
+            "arch": "x86_64",
+            "execution_host": true,
+            "workload_host": true,
+            "mounts": [
+              {
+                "path": "/",
+                "device": "/dev/sda2",
+                "fs_type": "ext4",
+                "options": ["rw", "relatime"],
+                "writable": true,
+                "probed_path": "/",
+                "values": {
+                  "units": "bytes",
+                  "capacity": 107374182400,
+                  "allocatable": 102005473280,
+                  "available_now": 26843545600,
+                  "reserved": 0
+                },
+                "free_bytes": 26843545600,
+                "free_inodes": 1000000,
+                "observation": {
+                  "kind": "mount",
+                  "source": "statvfs",
+                  "observed_at": "2026-08-12T11:30:00+00:00",
+                  "ttl_seconds": 1800,
+                  "confidence": 0.99,
+                  "evidence": ["statvfs(/)"]
+                }
+              },
+              {
+                "path": "/data",
+                "device": "/dev/md0",
+                "fs_type": "xfs",
+                "options": ["rw", "noatime"],
+                "writable": true,
+                "probed_path": "/data",
+                "values": {
+                  "units": "bytes",
+                  "capacity": 2147483648000,
+                  "allocatable": 2137218728960,
+                  "available_now": 1610612736000,
+                  "reserved": 0
+                },
+                "free_bytes": 1610612736000,
+                "free_inodes": 5000000,
+                "observation": {
+                  "kind": "mount",
+                  "source": "statvfs",
+                  "observed_at": "2026-08-12T11:31:00+00:00",
+                  "ttl_seconds": 1800,
+                  "confidence": 0.99,
+                  "evidence": ["statvfs(/data)"]
+                }
+              }
+            ],
+            "observations": [
+              {
+                "kind": "cpu",
+                "source": "lscpu",
+                "observed_at": "2026-08-12T11:30:00+00:00",
+                "ttl_seconds": 3600,
+                "confidence": 0.95,
+                "evidence": ["lscpu fixture"]
+              }
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "kind": "control",
+            "status": "direct",
+            "verified_at": "2026-08-12T11:29:00+00:00",
+            "evidence": ["ssh control channel verified"],
+            "peer": "healthy.local:22",
+            "rtt_ms": 3.1,
+            "throughput_mbps": 940.2
+          },
+          {
+            "kind": "artifact",
+            "status": "direct",
+            "verified_at": "2026-08-12T11:29:10+00:00",
+            "evidence": ["rsync dry-run verified"],
+            "peer": "healthy.local:22"
+          },
+          {
+            "kind": "bulk_data",
+            "status": "direct",
+            "verified_at": "2026-08-12T11:29:20+00:00",
+            "evidence": ["egress identity verified on server"],
+            "peer": "healthy.local:22",
+            "throughput_mbps": 940.2
+          }
+        ]
+      }
+    },
+    {
+      "scenario_id": "small-root-large-project-mount",
+      "description": "The central bug fixture: /root holds under 1 GiB free while the writable project mount /data is large. Placement must be decided on the exact project mount, never on root.",
+      "snapshot": {
+        "schema_version": 1,
+        "created_at": "2026-08-12T12:00:00+00:00",
+        "hosts": [
+          {
+            "host_id": "host-remote-a",
+            "name": "remote-a",
+            "os": "linux",
+            "arch": "x86_64",
+            "execution_host": true,
+            "workload_host": true,
+            "mounts": [
+              {
+                "path": "/",
+                "device": "/dev/sda2",
+                "fs_type": "ext4",
+                "options": ["rw", "relatime"],
+                "writable": true,
+                "probed_path": "/",
+                "values": {
+                  "units": "bytes",
+                  "capacity": 10737418240,
+                  "allocatable": 9663676416,
+                  "available_now": 1073741824,
+                  "reserved": 536870912
+                },
+                "free_bytes": 1073741824,
+                "free_inodes": 100000,
+                "observation": {
+                  "kind": "mount",
+                  "source": "statvfs",
+                  "observed_at": "2026-08-12T11:30:00+00:00",
+                  "ttl_seconds": 1800,
+                  "confidence": 0.99,
+                  "evidence": ["statvfs(/)"]
+                }
+              },
+              {
+                "path": "/data",
+                "device": "/dev/nvme0n1p3",
+                "fs_type": "xfs",
+                "options": ["rw", "noatime"],
+                "writable": true,
+                "probed_path": "/data",
+                "values": {
+                  "units": "bytes",
+                  "capacity": 1073741824000,
+                  "allocatable": 1065151889408,
+                  "available_now": 858993459200,
+                  "reserved": 0
+                },
+                "free_bytes": 858993459200,
+                "free_inodes": 2000000,
+                "observation": {
+                  "kind": "mount",
+                  "source": "statvfs",
+                  "observed_at": "2026-08-12T11:31:00+00:00",
+                  "ttl_seconds": 1800,
+                  "confidence": 0.99,
+                  "evidence": ["statvfs(/data)"]
+                }
+              }
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "kind": "control",
+            "status": "direct",
+            "verified_at": "2026-08-12T11:29:00+00:00",
+            "evidence": ["ssh control channel verified"],
+            "peer": "remote-a.example.test:22"
+          },
+          {
+            "kind": "artifact",
+            "status": "direct",
+            "verified_at": "2026-08-12T11:29:10+00:00",
+            "evidence": ["rsync dry-run verified"]
+          },
+          {
+            "kind": "bulk_data",
+            "status": "direct",
+            "verified_at": "2026-08-12T11:29:20+00:00",
+            "evidence": ["egress identity verified on server"],
+            "throughput_mbps": 940.2
+          }
+        ]
+      }
+    },
+    {
+      "scenario_id": "read-only-shared-mount",
+      "description": "A large but read-only shared mount must reject placement even with ample free bytes.",
+      "snapshot": {
+        "schema_version": 1,
+        "created_at": "2026-08-12T12:00:00+00:00",
+        "hosts": [
+          {
+            "host_id": "host-ro-shared",
+            "name": "ro-shared.local",
+            "os": "linux",
+            "arch": "x86_64",
+            "workload_host": true,
+            "mounts": [
+              {
+                "path": "/",
+                "device": "/dev/sda2",
+                "fs_type": "ext4",
+                "options": ["rw", "relatime"],
+                "writable": true,
+                "probed_path": "/",
+                "free_bytes": 214748364800,
+                "free_inodes": 2000000,
+                "values": {"units": "bytes", "capacity": 1073741824000, "available_now": 214748364800},
+                "observation": {
+                  "kind": "mount",
+                  "source": "statvfs",
+                  "observed_at": "2026-08-12T11:30:00+00:00",
+                  "ttl_seconds": 1800,
+                  "confidence": 0.99,
+                  "evidence": ["statvfs(/)"]
+                }
+              },
+              {
+                "path": "/shared",
+                "device": "nfs-share",
+                "fs_type": "nfs4",
+                "options": ["ro", "hard"],
+                "writable": false,
+                "probed_path": "/shared",
+                "free_bytes": 1073741824000,
+                "free_inodes": 4000000,
+                "values": {
+                  "units": "bytes",
+                  "capacity": 2147483648000,
+                  "available_now": 1073741824000
+                },
+                "observation": {
+                  "kind": "mount",
+                  "source": "statvfs",
+                  "observed_at": "2026-08-12T11:30:00+00:00",
+                  "ttl_seconds": 1800,
+                  "confidence": 0.99,
+                  "evidence": ["statvfs(/shared)", "findmnt ro"]
+                }
+              }
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "kind": "control",
+            "status": "direct",
+            "verified_at": "2026-08-12T11:29:00+00:00",
+            "evidence": ["ssh control channel verified"]
+          }
+        ]
+      }
+    },
+    {
+      "scenario_id": "inode-exhaustion",
+      "description": "Free bytes look healthy but inodes are exhausted, unknown, or quota-free is unknown. All three mounts must fail closed.",
+      "snapshot": {
+        "schema_version": 1,
+        "created_at": "2026-08-12T12:00:00+00:00",
+        "hosts": [
+          {
+            "host_id": "host-inodes",
+            "name": "inodes.local",
+            "os": "linux",
+            "arch": "x86_64",
+            "workload_host": true,
+            "mounts": [
+              {
+                "path": "/data",
+                "device": "/dev/sdb1",
+                "fs_type": "ext4",
+                "options": ["rw", "relatime"],
+                "writable": true,
+                "probed_path": "/data",
+                "free_bytes": 536870912000,
+                "free_inodes": 5,
+                "values": {"units": "bytes", "capacity": 1073741824000, "available_now": 536870912000},
+                "observation": {
+                  "kind": "mount",
+                  "source": "statvfs",
+                  "observed_at": "2026-08-12T11:30:00+00:00",
+                  "ttl_seconds": 1800,
+                  "confidence": 0.99,
+                  "evidence": ["statvfs(/data)"]
+                }
+              },
+              {
+                "path": "/works",
+                "device": "/dev/sdc1",
+                "fs_type": "ext4",
+                "options": ["rw", "relatime"],
+                "writable": true,
+                "probed_path": "/works",
+                "free_bytes": 536870912000,
+                "free_inodes": null,
+                "values": {"units": "bytes", "capacity": 1073741824000, "available_now": 536870912000},
+                "observation": {
+                  "kind": "mount",
+                  "source": "statvfs",
+                  "observed_at": "2026-08-12T11:30:00+00:00",
+                  "ttl_seconds": 1800,
+                  "confidence": 0.9,
+                  "evidence": ["statvfs(/works)"]
+                }
+              },
+              {
+                "path": "/quota",
+                "device": "/dev/sdd1",
+                "fs_type": "xfs",
+                "options": ["rw", "pquota"],
+                "writable": true,
+                "probed_path": "/quota",
+                "free_bytes": 536870912000,
+                "free_inodes": 200000,
+                "values": {"units": "bytes", "capacity": 1073741824000, "available_now": 536870912000},
+                "quota": {
+                  "kind": "project",
+                  "unit": "bytes",
+                  "limit": 268435456000,
+                  "used": 134217728000,
+                  "source": "xfs_quota report"
+                },
+                "observation": {
+                  "kind": "mount",
+                  "source": "statvfs",
+                  "observed_at": "2026-08-12T11:30:00+00:00",
+                  "ttl_seconds": 1800,
+                  "confidence": 0.95,
+                  "evidence": ["statvfs(/quota)"]
+                }
+              }
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "kind": "control",
+            "status": "direct",
+            "verified_at": "2026-08-12T11:29:00+00:00",
+            "evidence": ["ssh control channel verified"]
+          }
+        ]
+      }
+    },
+    {
+      "scenario_id": "mount-disappearance",
+      "description": "The project mount vanished from mountinfo; only root remains. A path on the disappeared mount must reject with no-mount evidence.",
+      "snapshot": {
+        "schema_version": 1,
+        "created_at": "2026-08-12T12:00:00+00:00",
+        "hosts": [
+          {
+            "host_id": "host-mount-gone",
+            "name": "mount-gone.local",
+            "os": "linux",
+            "arch": "x86_64",
+            "workload_host": true,
+            "mounts": [
+              {
+                "path": "/",
+                "device": "/dev/sda2",
+                "fs_type": "ext4",
+                "options": ["rw", "relatime"],
+                "writable": true,
+                "probed_path": "/",
+                "free_bytes": 214748364800,
+                "free_inodes": 1000000,
+                "values": {"units": "bytes", "capacity": 1073741824000, "available_now": 214748364800},
+                "observation": {
+                  "kind": "mount",
+                  "source": "statvfs",
+                  "observed_at": "2026-08-12T11:30:00+00:00",
+                  "ttl_seconds": 1800,
+                  "confidence": 0.99,
+                  "evidence": ["statvfs(/)"]
+                }
+              }
+            ]
+          }
+        ],
+        "routes": []
+      }
+    },
+    {
+      "scenario_id": "root-only-probe",
+      "description": "mountinfo lists /data but statvfs evidence covers only /. Root-only probing must not be accepted as capacity evidence for /data.",
+      "snapshot": {
+        "schema_version": 1,
+        "created_at": "2026-08-12T12:00:00+00:00",
+        "hosts": [
+          {
+            "host_id": "host-root-only",
+            "name": "root-only.local",
+            "os": "linux",
+            "arch": "x86_64",
+            "workload_host": true,
+            "mounts": [
+              {
+                "path": "/",
+                "device": "/dev/sda2",
+                "fs_type": "ext4",
+                "options": ["rw", "relatime"],
+                "writable": true,
+                "probed_path": "/",
+                "free_bytes": 214748364800,
+                "free_inodes": 1000000,
+                "values": {"units": "bytes", "capacity": 1073741824000, "available_now": 214748364800},
+                "observation": {
+                  "kind": "mount",
+                  "source": "statvfs",
+                  "observed_at": "2026-08-12T11:30:00+00:00",
+                  "ttl_seconds": 1800,
+                  "confidence": 0.99,
+                  "evidence": ["statvfs(/)"]
+                }
+              },
+              {
+                "path": "/data",
+                "device": "/dev/nvme0n1p3",
+                "fs_type": "xfs",
+                "options": ["rw", "noatime"],
+                "writable": null,
+                "probed_path": null,
+                "values": {"units": "bytes"}
+              }
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "kind": "control",
+            "status": "direct",
+            "verified_at": "2026-08-12T11:29:00+00:00",
+            "evidence": ["ssh control channel verified"]
+          }
+        ]
+      }
+    },
+    {
+      "scenario_id": "stale-root-evidence",
+      "description": "Root capacity observation has expired TTL while /data is fresh. A path on the stale mount must reject; the fresh mount remains usable.",
+      "snapshot": {
+        "schema_version": 1,
+        "created_at": "2026-08-12T12:00:00+00:00",
+        "hosts": [
+          {
+            "host_id": "host-stale-root",
+            "name": "stale-root.local",
+            "os": "linux",
+            "arch": "x86_64",
+            "workload_host": true,
+            "mounts": [
+              {
+                "path": "/",
+                "device": "/dev/sda2",
+                "fs_type": "ext4",
+                "options": ["rw", "relatime"],
+                "writable": true,
+                "probed_path": "/",
+                "free_bytes": 214748364800,
+                "free_inodes": 1000000,
+                "values": {"units": "bytes", "capacity": 1073741824000, "available_now": 214748364800},
+                "observation": {
+                  "kind": "mount",
+                  "source": "statvfs",
+                  "observed_at": "2026-08-12T08:00:00+00:00",
+                  "ttl_seconds": 1800,
+                  "confidence": 0.99,
+                  "evidence": ["statvfs(/)"]
+                }
+              },
+              {
+                "path": "/data",
+                "device": "/dev/nvme0n1p3",
+                "fs_type": "xfs",
+                "options": ["rw", "noatime"],
+                "writable": true,
+                "probed_path": "/data",
+                "free_bytes": 858993459200,
+                "free_inodes": 2000000,
+                "values": {"units": "bytes", "capacity": 1073741824000, "available_now": 858993459200},
+                "observation": {
+                  "kind": "mount",
+                  "source": "statvfs",
+                  "observed_at": "2026-08-12T11:31:00+00:00",
+                  "ttl_seconds": 1800,
+                  "confidence": 0.99,
+                  "evidence": ["statvfs(/data)"]
+                }
+              }
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "kind": "control",
+            "status": "direct",
+            "verified_at": "2026-08-12T11:29:00+00:00",
+            "evidence": ["ssh control channel verified"]
+          }
+        ]
+      }
+    },
+    {
+      "scenario_id": "vram-pressure",
+      "description": "GPU 0 is under VRAM pressure from observed processes; GPU 1 is idle. VRAM fit must account for process-held memory.",
+      "snapshot": {
+        "schema_version": 1,
+        "created_at": "2026-08-12T12:00:00+00:00",
+        "hosts": [
+          {
+            "host_id": "host-vram",
+            "name": "vram.local",
+            "os": "linux",
+            "arch": "x86_64",
+            "execution_host": true,
+            "workload_host": true,
+            "gpus": [
+              {
+                "index": "0",
+                "model": "NVIDIA GeForce RTX 4090",
+                "cuda_compatible": true,
+                "vram": {
+                  "units": "MiB",
+                  "capacity": 24564,
+                  "available_now": 8000,
+                  "used": 16564
+                },
+                "processes": [
+                  {"pid": 1111, "name": "python3", "vram_mib": 5000},
+                  {"pid": 2222, "name": "train.py", "vram_mib": 2000},
+                  {"pid": 3333, "name": "vllm", "vram_mib": 1500}
+                ],
+                "observation": {
+                  "kind": "vram",
+                  "source": "nvidia-smi",
+                  "observed_at": "2026-08-12T11:30:00+00:00",
+                  "ttl_seconds": 60,
+                  "confidence": 0.99,
+                  "evidence": ["nvidia-smi --query-gpu", "nvidia-smi --query-compute-apps"]
+                }
+              },
+              {
+                "index": "1",
+                "model": "NVIDIA GeForce RTX 4090",
+                "cuda_compatible": true,
+                "vram": {
+                  "units": "MiB",
+                  "capacity": 24564,
+                  "available_now": 20000,
+                  "used": 4564
+                },
+                "processes": [],
+                "observation": {
+                  "kind": "vram",
+                  "source": "nvidia-smi",
+                  "observed_at": "2026-08-12T11:30:00+00:00",
+                  "ttl_seconds": 60,
+                  "confidence": 0.99,
+                  "evidence": ["nvidia-smi --query-gpu"]
+                }
+              }
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "kind": "control",
+            "status": "direct",
+            "verified_at": "2026-08-12T11:29:00+00:00",
+            "evidence": ["ssh control channel verified"]
+          }
+        ]
+      }
+    },
+    {
+      "scenario_id": "unknown-route",
+      "description": "Control and artifact routes are verified, execution is direct, but bulk_data has no record and workload route is absent. Missing routes stay unknown and are never inferred.",
+      "snapshot": {
+        "schema_version": 1,
+        "created_at": "2026-08-12T12:00:00+00:00",
+        "hosts": [
+          {
+            "host_id": "host-local",
+            "name": "local-mac",
+            "os": "darwin",
+            "arch": "arm64",
+            "execution_host": true,
+            "labels": ["desktop-authenticated-cli"]
+          },
+          {
+            "host_id": "host-server",
+            "name": "server-1",
+            "os": "linux",
+            "arch": "x86_64",
+            "workload_host": true,
+            "labels": ["ssh-host"]
+          }
+        ],
+        "routes": [
+          {
+            "kind": "control",
+            "status": "direct",
+            "verified_at": "2026-08-12T11:29:00+00:00",
+            "evidence": ["ssh control channel verified"],
+            "peer": "server-1:22"
+          },
+          {
+            "kind": "artifact",
+            "status": "relay",
+            "verified_at": "2026-08-12T11:29:10+00:00",
+            "evidence": ["artifact rsync observed via relay"],
+            "rtt_ms": 18.4
+          },
+          {
+            "kind": "execution",
+            "status": "direct",
+            "verified_at": "2026-08-12T11:29:20+00:00",
+            "evidence": ["desktop CLI reachable locally"]
+          }
+        ]
+      }
+    }
+  ]
+}

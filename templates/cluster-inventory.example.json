@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "inventory_id": "cluster-example",
+  "controller_host": "node1-login",
+  "hosts": [
+    {
+      "host_id": "node1-login",
+      "role": "login_node",
+      "scheduler": {"backend": "torque-pbs", "qsub": "/opt/torque-2.5.2/bin/qsub", "queue": "workq"},
+      "worker_python": "/data/PROJECT/lt_work/environments/py312/bin/python",
+      "ssh_legacy_rsa": false,
+      "pbs": {
+        "wrapper": "/srv/PROJECT/lt_work/projects/local-agent-dispatch/scripts/pbs_worker_wrapper.py",
+        "python": "/data/PROJECT/lt_work/environments/py312/bin/python",
+        "qsub": "/opt/torque-2.5.2/bin/qsub",
+        "run_root": "/data/PROJECT/lt_work/runs",
+        "tmp_root": "/tmp/PROJECT-lad",
+        "queue": "workq",
+        "nodes": 1,
+        "ppn": 1
+      },
+      "controller_storage_candidates": [
+        {"path": "/var/tmp/lad-controller/dispatch.sqlite3", "locality": "known-local", "persistent": true, "priority": 10}
+      ],
+      "data_root": "/data/PROJECT/lt_work",
+      "artifact_root": "/data/PROJECT/lt_work/artifacts",
+      "tmp_root": "/tmp/PROJECT-lad",
+      "log_root": "/srv/PROJECT/lt_work/logs"
+    }
+  ]
+}

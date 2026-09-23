@@ -1,0 +1,49 @@
+# Install only on the controller host after replacing every /srv/lad example
+# path with a verified project-local path.  Keep dispatch.sqlite3 on a local
+# filesystem; /data or NFS is for source, payloads, logs, and artifacts only.
+[Unit]
+Description=Local Agent Dispatch durable 24-hour control loop
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=lad
+Group=lad
+WorkingDirectory=/srv/lad/project
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=TMPDIR=/var/tmp/lad-controller
+ExecStart=/usr/bin/python3 /srv/lad/project/scripts/durable_run_loop.py \
+  --db /var/lib/lad-controller/dispatch.sqlite3 \
+  --manifest /srv/lad/runs/active/continuous-run.json \
+  --capsule /srv/lad/runs/active/project-capsule.json \
+  --inventory /etc/lad/hosts.json \
+  --run-root /srv/lad/runs/active \
+  --poll-seconds 30 \
+  --max-runtime-seconds 86400 \
+  --max-record-bytes 131072
+
+# Exit 2 covers an abnormal launcher/lease/startup failure and is retried a
+# bounded number of times (for example, while a crashed owner's lease expires).
+# Exit 1 is the runner's explicit blocked/paused decision and must remain an
+# operator decision point, not a segment resubmission loop.  SQLite fencing
+# and segment adoption make a later reviewed start safe.
+Restart=on-failure
+RestartPreventExitStatus=1
+RestartSec=30
+StartLimitIntervalSec=3600
+StartLimitBurst=3
+KillSignal=SIGTERM
+KillMode=control-group
+TimeoutStopSec=120
+
+# Bound the controller itself.  PBS/remote workloads are separately admitted
+# and are not placed in this cgroup by this template.
+MemoryHigh=768M
+MemoryMax=1G
+TasksMax=64
+NoNewPrivileges=true
+PrivateTmp=false
+
+[Install]
+WantedBy=multi-user.target

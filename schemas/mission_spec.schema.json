@@ -1,0 +1,172 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Local Agent Dispatch MissionSpec v2",
+  "description": "Reviewable, provider-free mission contract compiled by src/local_agent_dispatch/intent/compiler.py. Every extracted value carries a source reference, confidence, and hard|soft|unknown status; material ambiguity is emitted for review instead of guessed.",
+  "type": "object",
+  "definitions": {
+    "source_ref": {
+      "type": "object",
+      "properties": {
+        "origin": { "enum": ["user_prompt", "structured_input", "compiler"] },
+        "span": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 },
+        "phrase": { "type": "string" }
+      },
+      "required": ["origin"],
+      "additionalProperties": false
+    },
+    "extracted": {
+      "type": "object",
+      "properties": {
+        "value": {},
+        "source": { "$ref": "#/definitions/source_ref" },
+        "confidence": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "status": { "enum": ["hard", "soft", "unknown"] }
+      },
+      "required": ["value", "source", "confidence", "status"],
+      "additionalProperties": false
+    },
+    "ambiguity": {
+      "type": "object",
+      "properties": {
+        "field": { "type": "string" },
+        "question": { "type": "string" },
+        "materiality": {
+          "type": "array",
+          "items": { "enum": ["cost", "permissions", "data_location", "scientific_claims"] }
+        },
+        "alternatives": { "type": "array", "items": { "type": "string" } },
+        "source": { "$ref": "#/definitions/source_ref" }
+      },
+      "required": ["field", "question", "materiality"],
+      "additionalProperties": false
+    },
+    "claim_envelope": {
+      "type": "object",
+      "properties": {
+        "allowed": { "type": "array", "items": { "type": "string" } },
+        "deferred": { "type": "array", "items": { "type": "string" } },
+        "forbidden": { "type": "array", "items": { "type": "string" } },
+        "promotion_gate": { "$ref": "#/definitions/extracted" },
+        "evidence_level": { "$ref": "#/definitions/extracted" }
+      },
+      "required": ["allowed", "deferred", "forbidden"],
+      "additionalProperties": false
+    },
+    "dag_node": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "depends_on": { "type": "array", "items": { "type": "string" } },
+        "write_scope": { "type": ["string", "null"] },
+        "risk": { "enum": ["low", "medium", "high"] },
+        "parallel": { "type": "boolean" },
+        "validator": { "type": ["string", "array", "null"] },
+        "output_paths": { "type": "array", "items": { "type": "string" } },
+        "input_digest": {},
+        "resource_estimate": {},
+        "claim_effect": {},
+        "model_pool": {},
+        "execution_host": {},
+        "workload_host": {}
+      },
+      "required": ["id", "depends_on", "write_scope", "risk", "parallel"],
+      "additionalProperties": true
+    },
+    "rejection": {
+      "type": "object",
+      "properties": {
+        "code": { "type": "string" },
+        "field": { "type": "string" },
+        "message": { "type": "string" },
+        "source": { "$ref": "#/definitions/source_ref" }
+      },
+      "required": ["code", "field", "message"],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "schema_version": { "type": "integer", "const": 2 },
+    "mission_id": { "type": "string", "minLength": 1 },
+    "goal": { "$ref": "#/definitions/extracted" },
+    "non_goals": { "type": "array", "items": { "$ref": "#/definitions/extracted" } },
+    "deliverables": { "type": "array", "items": { "$ref": "#/definitions/extracted" } },
+    "acceptance_tests": { "type": "array", "items": { "$ref": "#/definitions/extracted" } },
+    "claim_envelope": { "$ref": "#/definitions/claim_envelope" },
+    "data_class": { "$ref": "#/definitions/extracted" },
+    "dag_hints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "value": { "$ref": "#/definitions/dag_node" },
+          "source": { "$ref": "#/definitions/source_ref" },
+          "confidence": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "status": { "enum": ["hard", "soft", "unknown"] }
+        },
+        "required": ["value", "source", "confidence", "status"],
+        "additionalProperties": false
+      }
+    },
+    "policy": {
+      "type": "object",
+      "properties": {
+        "provider_policy": { "$ref": "#/definitions/extracted" },
+        "pool_policy": { "$ref": "#/definitions/extracted" },
+        "model_policy": { "$ref": "#/definitions/extracted" },
+        "quality_floor": { "$ref": "#/definitions/extracted" },
+        "effort": { "$ref": "#/definitions/extracted" },
+        "policy_excluded_model_override": { "$ref": "#/definitions/extracted" }
+      },
+      "additionalProperties": true
+    },
+    "deadline": { "$ref": "#/definitions/extracted" },
+    "quota_reserve": { "$ref": "#/definitions/extracted" },
+    "git_authority": { "$ref": "#/definitions/extracted" },
+    "cps_profiles": { "type": "array", "items": { "$ref": "#/definitions/extracted" } },
+    "checkpoints": { "type": "array", "items": { "$ref": "#/definitions/extracted" } },
+    "artifacts": { "type": "array", "items": { "$ref": "#/definitions/extracted" } },
+    "validators": { "type": "array", "items": { "$ref": "#/definitions/extracted" } },
+    "stop_conditions": { "type": "array", "items": { "$ref": "#/definitions/extracted" } },
+    "placement": { "$ref": "#/definitions/extracted" },
+    "ambiguous": { "type": "array", "items": { "$ref": "#/definitions/ambiguity" } },
+    "compile": {
+      "type": "object",
+      "properties": {
+        "schema_version": { "type": "integer", "const": 2 },
+        "compiler_version": { "type": "string" },
+        "origin": { "enum": ["natural_language", "structured_input"] },
+        "provider_free": { "const": true },
+        "executes_nothing": { "const": true },
+        "source_length": { "type": "integer" },
+        "source_keys": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["schema_version", "compiler_version", "origin", "provider_free", "executes_nothing"],
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "schema_version",
+    "mission_id",
+    "goal",
+    "non_goals",
+    "deliverables",
+    "acceptance_tests",
+    "claim_envelope",
+    "data_class",
+    "dag_hints",
+    "policy",
+    "deadline",
+    "quota_reserve",
+    "git_authority",
+    "cps_profiles",
+    "checkpoints",
+    "artifacts",
+    "validators",
+    "stop_conditions",
+    "placement",
+    "ambiguous",
+    "compile"
+  ],
+  "additionalProperties": true
+}

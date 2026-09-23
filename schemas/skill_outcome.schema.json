@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local-agent-dispatch.dev/schemas/skill_outcome.schema.json",
+  "title": "Skill Outcome",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "api_version",
+    "outcome_id",
+    "plan_id",
+    "skills",
+    "observed_at",
+    "status",
+    "quality_score",
+    "latency_ms",
+    "actual_cost",
+    "failure_codes",
+    "evidence_refs"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "api_version": {"const": "local-agent-dispatch.skill-outcome.v1"},
+    "outcome_id": {"$ref": "#/$defs/identifier"},
+    "plan_id": {"$ref": "#/$defs/identifier"},
+    "skills": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/skill_ref"}
+    },
+    "observed_at": {"type": "string", "format": "date-time"},
+    "status": {"enum": ["success", "partial", "failure"]},
+    "quality_score": {
+      "oneOf": [
+        {"type": "number", "minimum": 0, "maximum": 1},
+        {"type": "null"}
+      ]
+    },
+    "latency_ms": {
+      "oneOf": [{"type": "number", "minimum": 0}, {"type": "null"}]
+    },
+    "actual_cost": {
+      "oneOf": [{"type": "number", "minimum": 0}, {"type": "null"}]
+    },
+    "failure_codes": {"$ref": "#/$defs/identifiers"},
+    "evidence_refs": {"$ref": "#/$defs/nonempty_identifiers"}
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:@-]{0,127}$"
+    },
+    "identifiers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/identifier"}
+    },
+    "nonempty_identifiers": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/identifier"}
+    },
+    "skill_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skill_id", "version"],
+      "properties": {
+        "skill_id": {"$ref": "#/$defs/identifier"},
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-((?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\\+([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?$"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "failure"}}},
+      "then": {"properties": {"failure_codes": {"minItems": 1}}}
+    },
+    {
+      "if": {"properties": {"status": {"const": "success"}}},
+      "then": {"properties": {"failure_codes": {"maxItems": 0}}}
+    }
+  ]
+}

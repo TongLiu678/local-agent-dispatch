@@ -1,0 +1,10 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Legacy Dispatch Event Envelope",
+  "description": "Compatibility envelope for the lightweight dispatch_schema validator. This is not the normative EventV2 causal ledger; use provenance_event.schema.json for EventV2 records.",
+  "type": "object",
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 }
+  },
+  "required": ["schema_version"]
+}

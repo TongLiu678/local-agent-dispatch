@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local-agent-dispatch.invalid/schemas/scheduler_decision_input.schema.json",
+  "title": "Provider-free Scheduler Decision Input v1",
+  "description": "Strict replay envelope. All observations are caller-supplied; evaluating this document performs no probe, network request, provider call, or dispatch.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "bundle",
+    "state",
+    "resource_snapshot",
+    "heartbeat",
+    "provider",
+    "task_resources",
+    "now"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "bundle": {
+      "$ref": "scheduling_policy.schema.json"
+    },
+    "state": {
+      "$ref": "#/$defs/state"
+    },
+    "resource_snapshot": {
+      "$ref": "resource_snapshot.schema.json"
+    },
+    "heartbeat": {
+      "$ref": "worker_heartbeat.schema.json"
+    },
+    "provider": {
+      "$ref": "#/$defs/provider"
+    },
+    "task_resources": {
+      "$ref": "#/$defs/taskResources"
+    },
+    "now": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:@-]{0,127}$"
+    },
+    "nullablePositiveSequence": {
+      "type": ["integer", "null"],
+      "minimum": 1
+    },
+    "nullableRatio": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "current_limit",
+        "healthy_windows",
+        "last_adjusted_at",
+        "last_resource_sequence",
+        "last_heartbeat_sequence",
+        "last_provider_sequence"
+      ],
+      "properties": {
+        "current_limit": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "healthy_windows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "last_adjusted_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "last_resource_sequence": {
+          "$ref": "#/$defs/nullablePositiveSequence"
+        },
+        "last_heartbeat_sequence": {
+          "$ref": "#/$defs/nullablePositiveSequence"
+        },
+        "last_provider_sequence": {
+          "$ref": "#/$defs/nullablePositiveSequence"
+        }
+      }
+    },
+    "provider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider_id",
+        "max_concurrency",
+        "quota_remaining_ratio",
+        "error_rate",
+        "latency_seconds",
+        "timed_out",
+        "observed_at",
+        "ttl_seconds",
+        "confidence",
+        "sequence"
+      ],
+      "properties": {
+        "provider_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "max_concurrency": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "quota_remaining_ratio": {
+          "$ref": "#/$defs/nullableRatio"
+        },
+        "error_rate": {
+          "$ref": "#/$defs/nullableRatio"
+        },
+        "latency_seconds": {
+          "type": ["number", "null"],
+          "minimum": 0
+        },
+        "timed_out": {
+          "type": ["boolean", "null"]
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ttl_seconds": {
+          "type": ["integer", "null"],
+          "minimum": 1
+        },
+        "confidence": {
+          "$ref": "#/$defs/nullableRatio"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "taskResources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cpu_cores_per_slot",
+        "memory_bytes_per_slot",
+        "swap_bytes_per_slot",
+        "gpu_memory_bytes_per_slot",
+        "disk_bytes_per_slot",
+        "inodes_per_slot",
+        "owned_process_rss_bytes_per_slot",
+        "mount_path"
+      ],
+      "properties": {
+        "cpu_cores_per_slot": {
+          "type": ["number", "null"],
+          "exclusiveMinimum": 0
+        },
+        "memory_bytes_per_slot": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "swap_bytes_per_slot": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "gpu_memory_bytes_per_slot": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "disk_bytes_per_slot": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "inodes_per_slot": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "owned_process_rss_bytes_per_slot": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "mount_path": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

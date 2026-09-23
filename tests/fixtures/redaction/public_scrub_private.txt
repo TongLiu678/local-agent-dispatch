@@ -1,0 +1,10 @@
+ssh -p 54480 fixture@connect.synthetic.invalid
+Authorization: Bearer sk-test-redaction-fixture
+-----BEGIN ED25519 PRIVATE KEY-----
+/Users/ALICE
+/home/Bob,
+C:\Users\CAROL
+ssh alice@buildbox
+ssh://bob@internalbox/path
+scp file.txt carol@server:/tmp/file.txt
+ssh barealias

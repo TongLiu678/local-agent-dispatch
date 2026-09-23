@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Local Agent Dispatch Workflow Report",
+  "type": "object",
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "report_type": { "const": "local-agent-dispatch.workflow" },
+    "ok": { "type": "boolean" },
+    "read_only": { "const": true },
+    "provider_execution": { "const": false },
+    "model_prompts_sent": { "const": false },
+    "sequence": {
+      "type": "array",
+      "minItems": 5,
+      "items": { "type": "object" }
+    },
+    "hosts": { "type": "object" },
+    "pools": { "type": "object" },
+    "task_estimates": { "type": "object" },
+    "assignments": { "type": "array" },
+    "multi_lane": { "type": "object" },
+    "gates": { "type": "object" }
+  },
+  "required": [
+    "schema_version",
+    "report_type",
+    "ok",
+    "read_only",
+    "provider_execution",
+    "model_prompts_sent",
+    "sequence",
+    "hosts",
+    "pools",
+    "task_estimates",
+    "assignments",
+    "multi_lane",
+    "gates"
+  ],
+  "additionalProperties": true
+}

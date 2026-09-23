@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local-agent-dispatch.dev/schemas/skill_composition_request.schema.json",
+  "title": "Skill Composition Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "api_version",
+    "request_id",
+    "k",
+    "required_capabilities",
+    "desired_facets",
+    "platform",
+    "harness",
+    "allowed_skill_ids",
+    "prohibited_skill_ids",
+    "max_total_cost",
+    "max_skill_uncertainty",
+    "query_embedding"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "api_version": {"const": "local-agent-dispatch.skill-composition-request.v1"},
+    "request_id": {"$ref": "#/$defs/identifier"},
+    "k": {"enum": [3, 5, 10]},
+    "required_capabilities": {
+      "allOf": [
+        {"$ref": "#/$defs/nonempty_tags"},
+        {"maxItems": 16}
+      ]
+    },
+    "desired_facets": {"$ref": "#/$defs/tags"},
+    "platform": {"$ref": "#/$defs/selector"},
+    "harness": {"$ref": "#/$defs/selector"},
+    "allowed_skill_ids": {"$ref": "#/$defs/identifiers"},
+    "prohibited_skill_ids": {"$ref": "#/$defs/identifiers"},
+    "max_total_cost": {"type": "number", "minimum": 0},
+    "max_skill_uncertainty": {"type": "number", "minimum": 0, "maximum": 1},
+    "query_embedding": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4096,
+      "items": {"type": "number"}
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:@-]{0,127}$"
+    },
+    "tag": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._:-]{0,63}$"
+    },
+    "selector": {
+      "type": "string",
+      "pattern": "^(?:\\*|[a-z0-9][a-z0-9._:-]{0,63})$"
+    },
+    "tags": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/tag"}
+    },
+    "nonempty_tags": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/tag"}
+    },
+    "identifiers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/identifier"}
+    }
+  }
+}

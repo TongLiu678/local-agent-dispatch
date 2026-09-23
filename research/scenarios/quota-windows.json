@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "description": "Deterministic fixture corpus for provider-free replay research (WP9). Pools mirror the local-agent-dispatch shared quota pools; window kinds cover five-hour rolling, weekly calendar and monthly calendar resets. This corpus is synthetic and must never be presented as provider billing data.",
+  "pools": [
+    {
+      "pool_id": "opencode.go",
+      "health": "ready",
+      "quota_display_known": true,
+      "attribution_noise": 0.02,
+      "windows": [
+        { "name": "five_hour", "kind": "rolling", "duration_seconds": 18000, "cap": 1000.0 },
+        { "name": "week", "kind": "calendar", "calendar_granularity": "week", "cap": 5000.0 },
+        { "name": "month", "kind": "calendar", "calendar_granularity": "month", "cap": 20000.0 }
+      ],
+      "models": [
+        { "model_id": "opencode-go/mimo-v2.5", "params": { "cost_per_k": 0.0006, "base_latency": 6.0, "quality": 0.88, "role": "efficient" } },
+        { "model_id": "opencode-go/kimi-k2.7-code", "params": { "cost_per_k": 0.0012, "base_latency": 9.0, "quality": 0.92, "role": "bounded_code" } },
+        { "model_id": "opencode-go/gpt-5.6-luna", "params": { "cost_per_k": 0.004, "base_latency": 18.0, "quality": 0.97, "role": "hard" } },
+        { "model_id": "opencode-go/deepseek-v4-flash", "params": { "cost_per_k": 0.0004, "base_latency": 5.0, "quality": 0.8, "role": "excluded_by_default" } }
+      ]
+    },
+    {
+      "pool_id": "cursor.composer_grok",
+      "health": "ready",
+      "quota_display_known": false,
+      "attribution_noise": 0.05,
+      "windows": [
+        { "name": "five_hour", "kind": "rolling", "duration_seconds": 18000, "cap": 800.0 },
+        { "name": "week", "kind": "calendar", "calendar_granularity": "week", "cap": 4000.0 }
+      ],
+      "models": [
+        { "model_id": "composer-2.5-fast", "params": { "cost_per_k": 0.0009, "base_latency": 8.0, "quality": 0.9, "role": "bounded_code" } },
+        { "model_id": "cursor-grok-4.5-high", "params": { "cost_per_k": 0.003, "base_latency": 14.0, "quality": 0.95, "role": "hard" } }
+      ]
+    },
+    {
+      "pool_id": "cursor.other",
+      "health": "ready",
+      "quota_display_known": false,
+      "attribution_noise": 0.05,
+      "windows": [
+        { "name": "five_hour", "kind": "rolling", "duration_seconds": 18000, "cap": 800.0 },
+        { "name": "week", "kind": "calendar", "calendar_granularity": "week", "cap": 4000.0 }
+      ],
+      "models": [
+        { "model_id": "gpt-5.3-codex-high", "params": { "cost_per_k": 0.002, "base_latency": 12.0, "quality": 0.94, "role": "bounded_code" } },
+        { "model_id": "gemini-3.6-flash-high", "params": { "cost_per_k": 0.0015, "base_latency": 10.0, "quality": 0.91, "role": "efficient" } }
+      ]
+    },
+    {
+      "pool_id": "antigravity.gemini",
+      "health": "ready",
+      "quota_display_known": true,
+      "attribution_noise": 0.03,
+      "windows": [
+        { "name": "five_hour", "kind": "rolling", "duration_seconds": 18000, "cap": 1200.0 },
+        { "name": "week", "kind": "calendar", "calendar_granularity": "week", "cap": 6000.0 }
+      ],
+      "models": [
+        { "model_id": "gemini-3.6-flash-minimal", "params": { "cost_per_k": 0.0005, "base_latency": 5.0, "quality": 0.85, "role": "efficient" } },
+        { "model_id": "gemini-3.1-pro", "params": { "cost_per_k": 0.005, "base_latency": 20.0, "quality": 0.96, "role": "hard" } }
+      ]
+    },
+    {
+      "pool_id": "antigravity.claude_gpt",
+      "health": "ready",
+      "quota_display_known": true,
+      "attribution_noise": 0.03,
+      "windows": [
+        { "name": "five_hour", "kind": "rolling", "duration_seconds": 18000, "cap": 1200.0 },
+        { "name": "week", "kind": "calendar", "calendar_granularity": "week", "cap": 6000.0 }
+      ],
+      "models": [
+        { "model_id": "claude-sonnet-5", "params": { "cost_per_k": 0.003, "base_latency": 13.0, "quality": 0.95, "role": "normal" } },
+        { "model_id": "gpt-oss-120b-medium", "params": { "cost_per_k": 0.001, "base_latency": 9.0, "quality": 0.89, "role": "efficient" } }
+      ]
+    },
+    {
+      "pool_id": "codex",
+      "health": "ready",
+      "quota_display_known": true,
+      "attribution_noise": 0.01,
+      "windows": [
+        { "name": "five_hour", "kind": "rolling", "duration_seconds": 18000, "cap": 900.0 },
+        { "name": "week", "kind": "calendar", "calendar_granularity": "week", "cap": 4500.0 }
+      ],
+      "models": [
+        { "model_id": "gpt-5.6-luna", "params": { "cost_per_k": 0.004, "base_latency": 18.0, "quality": 0.97, "role": "hard" } },
+        { "model_id": "gpt-5.3-codex-spark", "params": { "cost_per_k": 0.0007, "base_latency": 6.0, "quality": 0.87, "role": "bounded_code" } }
+      ]
+    }
+  ],
+  "hosts": [
+    {
+      "host_id": "host-local",
+      "online": true,
+      "route_ok": true,
+      "vram_total_mb": 24576,
+      "vram_used_mb": 2048,
+      "mounts": { "/workspace": true, "/cache": true },
+      "workers": ["worker-a", "worker-b"]
+    },
+    {
+      "host_id": "host-remote-a",
+      "online": true,
+      "route_ok": true,
+      "vram_total_mb": 81920,
+      "vram_used_mb": 40960,
+      "mounts": { "/workspace": true, "/data": true },
+      "workers": ["worker-c"]
+    }
+  ],
+  "fault_matrix": [
+    { "fault": "crash", "description": "worker process dies mid-run; lease/state must be recovered", "target_kind": "worker" },
+    { "fault": "lost_ack", "description": "delivery acknowledgement lost; scheduler must not double-run", "target_kind": "worker" },
+    { "fault": "duplicate_delivery", "description": "packet redelivered; idempotency and fence must block a second irreversible effect", "target_kind": "job" },
+    { "fault": "stale_fence", "description": "expired lease token; claim must be rejected, not silently accepted", "target_kind": "worker" },
+    { "fault": "partial_artifact", "description": "artifact truncated; validator must fail closed", "target_kind": "job" },
+    { "fault": "ssh_disconnect", "description": "route drops mid-run; resume must reconcile the lease", "target_kind": "host" },
+    { "fault": "quota_exhaustion", "description": "shared pool hits zero; model rotation is not a quota workaround", "target_kind": "pool" },
+    { "fault": "quota_reset", "description": "window refresh restores pool; health must recover", "target_kind": "pool" },
+    { "fault": "mount_loss", "description": "mount disappears; writes must fail closed", "target_kind": "host" },
+    { "fault": "capability_rejection", "description": "exact model tuple rejected; siblings stay eligible", "target_kind": "pool" },
+    { "fault": "missing_human_review", "description": "review window elapses; completion must not be inferred", "target_kind": "job" }
+  ],
+  "job_corpus": [
+    { "job_id": "tpl-code-L2", "family": "code", "difficulty": "L2", "requires_review": false, "arrival": 0.0 },
+    { "job_id": "tpl-hard-L4", "family": "audit", "difficulty": "L4", "requires_review": true, "arrival": 0.0 },
+    { "job_id": "tpl-text-L0", "family": "text", "difficulty": "L0", "requires_review": false, "arrival": 0.0 },
+    { "job_id": "tpl-research-L3", "family": "research", "difficulty": "L3", "requires_review": true, "arrival": 0.0 }
+  ],
+  "notes": [
+    "cursor.* and opencode.go quotas are display-unknown in live CLI snapshots; quota_display_known=false models that planning reality and forces the pilot policy.",
+    "Window boundaries are epoch-aligned: week resets Monday 00:00, month resets the 1st 00:00, five_hour is a sliding 18000s window.",
+    "No value here is a provider billing fact; cost_per_k is synthetic calibration input that must be replaced by live measurements before any cost claim leaves replay."
+  ]
+}

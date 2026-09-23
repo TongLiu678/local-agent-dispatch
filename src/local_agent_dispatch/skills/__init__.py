@@ -1,0 +1,81 @@
+"""Provider-free skill indexing, composition, and evolution proposals."""
+
+from .composition import (
+    CompositionConstraintError,
+    CompositionError,
+    CompositionPlan,
+    ObjectiveBreakdown,
+    PlannedSkill,
+    SearchHit,
+    SkillIndexFreshnessError,
+    compose_skills,
+    search_skills,
+)
+from .evolution import (
+    EvolutionError,
+    EvolutionPolicy,
+    SkillEvolutionProposal,
+    SkillLineage,
+    SkillOutcome,
+    SkillRef,
+    lineage_from_proposal,
+    propose_evolution,
+)
+from .latent import (
+    LatentAnalysis,
+    LatentAnalysisError,
+    LatentPair,
+    RedundancyGroup,
+    TagCoverage,
+    analyze_latent_space,
+)
+from .models import (
+    CompositionRequest,
+    SELECTION_SIZES,
+    SkillDescriptor,
+    SkillIndexSnapshot,
+    SkillValidationError,
+)
+from .scaffold import (
+    ScaffoldError,
+    ScaffoldSpec,
+    SkillScaffoldReceipt,
+    create_skill_package,
+    load_scaffold_json,
+)
+
+__all__ = [
+    "CompositionConstraintError",
+    "CompositionError",
+    "CompositionPlan",
+    "CompositionRequest",
+    "EvolutionError",
+    "EvolutionPolicy",
+    "LatentAnalysis",
+    "LatentAnalysisError",
+    "LatentPair",
+    "ObjectiveBreakdown",
+    "PlannedSkill",
+    "RedundancyGroup",
+    "ScaffoldError",
+    "ScaffoldSpec",
+    "SELECTION_SIZES",
+    "SearchHit",
+    "SkillDescriptor",
+    "SkillEvolutionProposal",
+    "SkillIndexFreshnessError",
+    "SkillIndexSnapshot",
+    "SkillLineage",
+    "SkillOutcome",
+    "SkillRef",
+    "SkillScaffoldReceipt",
+    "SkillValidationError",
+    "TagCoverage",
+    "analyze_latent_space",
+    "compose_skills",
+    "create_skill_package",
+    "lineage_from_proposal",
+    "load_scaffold_json",
+    "propose_evolution",
+    "search_skills",
+]

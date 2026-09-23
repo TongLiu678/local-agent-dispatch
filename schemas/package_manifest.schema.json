@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local-agent-dispatch.dev/schemas/package_manifest.schema.json",
+  "title": "Local Agent Dispatch Package Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "api_version",
+    "name",
+    "version",
+    "kind",
+    "entrypoint",
+    "artifacts"
+  ],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "api_version": {"const": "1"},
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9](?:[a-z0-9._-]{0,126}[a-z0-9])?$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-((?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\\+([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?$"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "system_probe",
+        "provider",
+        "runtime",
+        "transport",
+        "validator",
+        "agent_harness",
+        "batch_scheduler",
+        "artifact_store",
+        "bundle",
+        "skill"
+      ]
+    },
+    "description": {"type": "string"},
+    "entrypoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "value"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["python", "executable", "container", "endpoint", "none"]
+        },
+        "value": {"type": ["string", "null"]}
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9](?:[a-z0-9._-]{0,126}[a-z0-9])?$"
+      }
+    },
+    "platforms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["os", "arch"],
+        "properties": {
+          "os": {"type": "string"},
+          "arch": {"type": "string"}
+        }
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "constraint", "optional"],
+        "properties": {
+          "name": {"type": "string"},
+          "constraint": {"type": "string"},
+          "optional": {"type": "boolean"}
+        }
+      }
+    },
+    "permissions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "network",
+          "provider_prompt",
+          "subprocess",
+          "workspace_read",
+          "workspace_write",
+          "host_probe",
+          "remote_transport",
+          "credential_reference"
+        ]
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256", "size", "executable"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "sha256": {
+            "type": "string",
+            "pattern": "^(?:sha256:)?[0-9a-f]{64}$"
+          },
+          "size": {"type": "integer", "minimum": 0},
+          "executable": {"type": "boolean"}
+        }
+      }
+    },
+    "publisher": {"type": ["string", "null"]},
+    "metadata": {"type": "object"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "entrypoint": {
+            "properties": {"type": {"const": "container"}},
+            "required": ["type"]
+          }
+        },
+        "required": ["entrypoint"]
+      },
+      "then": {
+        "properties": {
+          "entrypoint": {
+            "properties": {
+              "value": {
+                "type": "string",
+                "pattern": "^[^\\s@]+@sha256:[0-9a-f]{64}$"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"kind": {"const": "skill"}},
+        "required": ["kind"]
+      },
+      "then": {
+        "properties": {
+          "entrypoint": {
+            "properties": {"type": {"const": "none"}}
+          },
+          "artifacts": {
+            "contains": {
+              "type": "object",
+              "required": ["path"],
+              "properties": {"path": {"const": "SKILL.md"}}
+            }
+          }
+        }
+      }
+    }
+  ]
+}

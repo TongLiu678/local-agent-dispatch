@@ -1,0 +1,300 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13']
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install package without provider dependencies
+        run: python -m pip install --no-deps -e .
+
+      - name: Run provider-free unit tests
+        env:
+          CI: '1'
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python -m unittest discover -s tests -p 'test_*.py'
+
+      - name: Compile Python sources
+        run: |
+          # AppleDouble sidecars are binary metadata, never Python sources.
+          find src scripts -type f -name '*.py' ! -name '._*' -print0 \
+            | xargs -r -0 python3 -m compileall -q
+
+      - name: Check shell syntax
+        shell: bash
+        run: |
+          for script in scripts/*.sh; do
+            bash -n "$script"
+          done
+
+      - name: Scrub public source tree
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          # Only the dedicated synthetic redaction fixture may contain
+          # token-shaped values.  Keep the allowlist narrow so an unrelated
+          # test or runtime artifact cannot hide a public-export finding.
+          python3 scripts/public_scrub.py \
+            --repo . \
+            --ref HEAD \
+            --allow-path tests/fixtures/redaction \
+            --allow-path research/scenarios
+
+      - name: Exercise offline CLI surface
+        env:
+          CI: '1'
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          python -m local_agent_dispatch.cli --version
+          python -m local_agent_dispatch.cli doctor --offline
+          python -m local_agent_dispatch.cli demo --offline
+
+      - name: Build and smoke non-editable wheel
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          # setup-python no longer guarantees setuptools/wheel in every
+          # interpreter image. Install the build tools explicitly so the
+          # no-build-isolation smoke gate is deterministic across 3.10–3.13.
+          python -m pip install --upgrade 'setuptools>=61' wheel
+          wheel_dir="${RUNNER_TEMP}/lad-wheel"
+          install_dir="${RUNNER_TEMP}/lad-wheel-install"
+          mkdir -p "$wheel_dir" "$install_dir"
+          python -m pip wheel --no-deps --no-build-isolation -w "$wheel_dir" .
+          wheel=$(find "$wheel_dir" -maxdepth 1 -name '*.whl' -print -quit)
+          test -n "$wheel"
+          python - "$wheel" <<'PY'
+          from pathlib import Path
+          import sys
+          import zipfile
+
+          wheel_path = Path(sys.argv[1])
+          root = Path("share/local-agent-dispatch")
+          def public(paths):
+              return [path for path in paths if not path.name.startswith("._")]
+
+          groups = {
+              "top-level documentation": [
+                  Path("SKILL.md"),
+                  Path("README.md"),
+                  Path("CONTRIBUTING.md"),
+                  Path("SECURITY.md"),
+                  Path("CHANGELOG.md"),
+              ],
+              "scripts": public(sorted(Path("scripts").glob("*.py")))
+              + public(sorted(Path("scripts").glob("*.sh"))),
+              "schemas": public(sorted(Path("schemas").glob("*.json"))),
+              "docs": public(sorted(Path("docs").glob("*.md"))),
+              "references": public(sorted(Path("references").glob("*.md"))),
+              "templates": public(sorted(Path("templates").glob("*.md"))),
+          }
+          expected = {
+              (root / path).as_posix()
+              for paths in groups.values()
+              for path in paths
+          }
+          with zipfile.ZipFile(wheel_path) as archive:
+              data_prefix = ".data/data/"
+              bundled = {
+                  name.split(data_prefix, 1)[1]
+                  for name in archive.namelist()
+                  if data_prefix in name
+              }
+          leaked = sorted(
+              name for name in bundled if Path(name).name.startswith("._")
+          )
+          if leaked:
+              raise SystemExit(
+                  "wheel data contains AppleDouble sidecars: " + ", ".join(leaked)
+              )
+          missing = sorted(expected - bundled)
+          if missing:
+              raise SystemExit("wheel is missing data files: " + ", ".join(missing))
+          print(f"wheel-data-ok: {len(expected)} files")
+          PY
+          python -m pip install --no-deps --target "$install_dir" "$wheel"
+          PYTHONPATH="$install_dir" python -m local_agent_dispatch.cli --version
+          PYTHONPATH="$install_dir" python -m local_agent_dispatch.cli doctor --offline
+
+  portable-smoke:
+    name: ${{ matrix.label }} bounded offline smoke
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: macOS
+            os: macos-latest
+          - label: Windows
+            os: windows-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install package without provider dependencies
+        run: python -m pip install --no-deps -e .
+
+      - name: Run portable provider-free contract smokes
+        env:
+          CI: '1'
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: >-
+          python -m unittest
+          tests.test_public_scrub
+          tests.test_public_export
+          tests.test_plugin_protocols
+          tests.test_package_manager
+          tests.test_package_cli
+          tests.test_package_lock
+          tests.test_package_lock_cli
+          tests.test_harness_adapters
+          tests.test_worker_contracts
+          tests.test_scheduler_core
+          tests.test_scheduler_policy
+          tests.test_scheduler_cli
+          tests.test_skill_composition
+          tests.test_skill_evolution
+          tests.test_skill_cli
+          tests.test_skill_latent
+          tests.test_skill_scaffold
+          tests.test_resource_admission
+          tests.test_resource_topology
+          tests.test_local_system_scan
+          tests.test_portable_file_lock
+          tests.test_controller_reliability
+          tests.test_dispatch_monitor
+          tests.test_remote_envelope
+          tests.test_remote_worker
+          tests.test_remote_envelope_integration
+          tests.test_remote_delivery_fault_matrix
+          tests.test_sqlite_controller
+          tests.test_sqlite_store
+          tests.test_plan_controller_e2e
+
+      - name: Exercise bounded offline host inspection
+        env:
+          CI: '1'
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          # This is an install/import/plugin/scrubber/offline-inspection smoke.
+          # It does not claim Windows/macOS worker, PBS, shell, service-manager,
+          # SSH transport, or provider-CLI parity with the full Linux suite.
+          python -m local_agent_dispatch.cli --version
+          python -m local_agent_dispatch.cli doctor --offline
+          python -m local_agent_dispatch.cli demo --offline
+
+  m0-gates:
+    name: M0 source-truth and replay gates
+    runs-on: ubuntu-latest
+    # This is the ref that actually exists in the public repository.  Change
+    # this value deliberately when the public release ref changes; an empty or
+    # unresolved ref must fail the gate rather than silently downgrading it.
+    env:
+      LAD_PUBLIC_REF: public-v0.1.0-alpha.6
+
+    steps:
+      - name: Check out full Git history and tags
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install package without provider dependencies
+        run: python -m pip install --no-deps -e .
+
+      - name: Verify canonical public ref and source truth
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          test -n "${LAD_PUBLIC_REF:?LAD_PUBLIC_REF must not be empty}"
+          python3 scripts/source_truth_audit.py \
+            --repo . \
+            --public-ref "$LAD_PUBLIC_REF" \
+            --require-public-ref \
+            --require-reconciled \
+            --output "$RUNNER_TEMP/source-truth-report.json"
+          python3 - "$RUNNER_TEMP/source-truth-report.json" <<'PY'
+          import json
+          import pathlib
+          import sys
+
+          report = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+          if report.get("working_tree_dirty"):
+              raise SystemExit("source-truth gate requires a clean checkout")
+          if report.get("canonical_state") not in {"aligned", "ancestry_reconciled"}:
+              raise SystemExit(
+                  "source-truth gate is not reconciled: "
+                  + repr(report.get("canonical_state"))
+              )
+          print(
+              "source-truth-ok:",
+              report.get("public_ref"),
+              report.get("canonical_state"),
+          )
+          PY
+
+      - name: Scrub configured public ref
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          # Scrubbing HEAD alone is insufficient: a stale release tag can
+          # still contain private paths or token-shaped test fixtures.
+          python3 scripts/public_scrub.py \
+            --repo . \
+            --ref "$LAD_PUBLIC_REF" \
+            --allow-path tests/fixtures/redaction \
+            --allow-path research/scenarios \
+            --output "$RUNNER_TEMP/public-ref-scrub-report.json"
+
+      - name: Verify frozen benchmark holdout
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          python3 scripts/benchmark_holdout.py \
+            --corpus research/corpus/generic-mission-benchmark-v1.json \
+            --manifest research/corpus/generic-mission-benchmark-v1-holdout.json
+
+      - name: Reproduce provider-free baseline twice
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          python3 scripts/m0_baseline_runner.py \
+            --repo . \
+            --command-json '["python3","-m","unittest","discover","-s","tests","-p","test_*.py"]' \
+            --fixture research/corpus/generic-mission-benchmark-v1.json \
+            --fixture research/corpus/generic-mission-benchmark-v1-holdout.json \
+            --require-clean \
+            --output "$RUNNER_TEMP/m0-baseline-report.json"

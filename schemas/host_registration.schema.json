@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "local-agent-dispatch/host_registration.schema.json",
+  "title": "HostRegistration v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "api_version", "registration_id", "host_id",
+    "worker_id", "roles", "registered_at", "idempotency_key",
+    "fence_token", "labels"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "api_version": {"const": "local-agent-dispatch.worker.v1"},
+    "registration_id": {"$ref": "#/$defs/id"},
+    "host_id": {"$ref": "#/$defs/id"},
+    "worker_id": {"$ref": "#/$defs/id"},
+    "roles": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {"enum": ["execution", "workload"]}
+    },
+    "registered_at": {"type": "string", "format": "date-time"},
+    "idempotency_key": {"$ref": "#/$defs/id"},
+    "fence_token": {"type": "integer", "minimum": 1},
+    "labels": {
+      "type": "array", "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string", "minLength": 1, "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:@-]{0,127}$"
+    }
+  }
+}

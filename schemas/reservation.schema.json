@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "local-agent-dispatch/reservation.schema.json",
+  "title": "ResourceReservation",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "reservation_id",
+    "job_id",
+    "scope",
+    "status",
+    "owner_id",
+    "fence_token",
+    "created_at_utc",
+    "updated_at_utc",
+    "lease_expires_at_utc",
+    "resource_request",
+    "admission"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "reservation_id": {"type": "string", "minLength": 1},
+    "job_id": {"type": "string", "minLength": 1},
+    "scope": {"type": "string", "minLength": 1},
+    "status": {"enum": ["active", "released", "expired"]},
+    "owner_id": {"type": "string", "minLength": 1},
+    "fence_token": {"type": "integer", "minimum": 1},
+    "created_at_utc": {"type": "string", "minLength": 1},
+    "updated_at_utc": {"type": "string", "minLength": 1},
+    "lease_expires_at_utc": {"type": "string", "minLength": 1},
+    "resource_request": {"type": "object"},
+    "admission": {"type": "object"},
+    "release_reason": {"type": ["string", "null"]},
+    "run_id": {"type": ["string", "null"]},
+    "segment_id": {"type": ["string", "null"]},
+    "checkpoint_id": {"type": ["string", "null"]}
+  },
+  "additionalProperties": true
+}

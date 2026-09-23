@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "local-agent-dispatch/worker_heartbeat.schema.json",
+  "title": "WorkerHeartbeat v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "api_version", "heartbeat_id", "host_id", "worker_id",
+    "state", "observed_at", "ttl_seconds", "source", "confidence", "sequence",
+    "idempotency_key", "fence_token", "capability_sequence", "resource_sequence",
+    "reserved_usage", "actual_usage", "active_execution_handles"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "api_version": {"const": "local-agent-dispatch.worker.v1"},
+    "heartbeat_id": {"$ref": "#/$defs/id"},
+    "host_id": {"$ref": "#/$defs/id"},
+    "worker_id": {"$ref": "#/$defs/id"},
+    "state": {"enum": ["ready", "busy", "draining", "stopped", "unknown"]},
+    "observed_at": {"type": "string", "format": "date-time"},
+    "ttl_seconds": {"type": ["integer", "null"], "minimum": 1},
+    "source": {"type": "string", "minLength": 1},
+    "confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+    "sequence": {"type": "integer", "minimum": 1},
+    "idempotency_key": {"$ref": "#/$defs/id"},
+    "fence_token": {"type": "integer", "minimum": 1},
+    "capability_sequence": {"type": ["integer", "null"], "minimum": 1},
+    "resource_sequence": {"type": ["integer", "null"], "minimum": 1},
+    "reserved_usage": {"$ref": "#/$defs/usage"},
+    "actual_usage": {"$ref": "#/$defs/usage"},
+    "active_execution_handles": {
+      "type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string", "minLength": 1, "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:@-]{0,127}$"
+    },
+    "usage": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "cpu_cores", "ram_bytes", "swap_bytes", "gpu_memory_bytes",
+        "disk_bytes", "inodes", "owned_process_rss_bytes"
+      ],
+      "properties": {
+        "cpu_cores": {"type": ["number", "null"], "minimum": 0},
+        "ram_bytes": {"type": ["integer", "null"], "minimum": 0},
+        "swap_bytes": {"type": ["integer", "null"], "minimum": 0},
+        "gpu_memory_bytes": {"type": ["integer", "null"], "minimum": 0},
+        "disk_bytes": {"type": ["integer", "null"], "minimum": 0},
+        "inodes": {"type": ["integer", "null"], "minimum": 0},
+        "owned_process_rss_bytes": {"type": ["integer", "null"], "minimum": 0}
+      }
+    }
+  }
+}

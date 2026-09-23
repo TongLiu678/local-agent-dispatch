@@ -1,0 +1,172 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Task Packet",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "oneOf": [
+        { "type": "integer", "const": 1 },
+        { "type": "string", "const": "lad_task_packet/2.0.0" }
+      ]
+    },
+    "kind": { "type": "string" },
+    "packet_id": { "type": "string", "minLength": 1 },
+    "job_id": { "type": "string", "minLength": 1 },
+    "write_scope": { "type": "string", "minLength": 1 },
+    "validation_required": { "const": true },
+    "required_artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "attempts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["attempt_id", "adapter", "transport", "model"],
+        "properties": {
+          "attempt_id": { "type": "string", "minLength": 1 },
+          "adapter": { "type": "string", "minLength": 1 },
+          "transport": { "enum": ["local", "ssh"] },
+          "model": { "type": "string", "minLength": 1 }
+        },
+        "additionalProperties": true
+      }
+    },
+    "legacy_compatibility": { "type": "boolean" },
+    "foundry_binding": { "type": "object" },
+    "packet_digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+  },
+  "required": ["schema_version"],
+  "additionalProperties": true,
+  "oneOf": [
+    { "required": ["packet_id", "job_id", "write_scope", "validation_required", "required_artifacts", "attempts"] },
+    { "required": ["legacy_compatibility", "job_id"] },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version", "kind", "job_id", "exact_model", "execution_host_digest",
+        "workload_host_digest", "resource_request", "quota_snapshot", "write_scope",
+        "validation_command", "artifact_path", "result_path", "plan_digest",
+        "assignment_digest", "foundry_binding", "packet_digest"
+      ],
+      "properties": {
+        "schema_version": { "const": "lad_task_packet/2.0.0" },
+        "kind": { "const": "foundry_task_packet" },
+        "job_id": { "type": "string", "minLength": 1 },
+        "exact_model": { "type": "string", "minLength": 1 },
+        "exact_effort": { "type": ["string", "null"] },
+        "execution_host_digest": { "$ref": "#/definitions/digest" },
+        "workload_host_digest": { "$ref": "#/definitions/digest" },
+        "resource_request": { "$ref": "#/definitions/resource_request" },
+        "quota_snapshot": { "$ref": "#/definitions/quota_snapshot" },
+        "write_scope": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "validation_command": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "artifact_path": { "type": "string", "minLength": 1 },
+        "result_path": { "type": "string", "minLength": 1 },
+        "plan_digest": { "$ref": "#/definitions/digest" },
+        "assignment_digest": { "$ref": "#/definitions/digest" },
+        "foundry_binding": { "$ref": "#/definitions/foundry_binding" },
+        "packet_digest": { "$ref": "#/definitions/digest" }
+      }
+    }
+  ],
+  "definitions": {
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "resource_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version", "kind", "request_id", "project_id",
+        "task_profile_digest", "cpu_cores", "memory_bytes", "disk_bytes",
+        "gpu_count", "minimum_gpu_memory_bytes", "maximum_wall_seconds",
+        "output_path_digest", "request_digest"
+      ],
+      "properties": {
+        "schema_version": { "const": "0.1.0" },
+        "kind": { "const": "resource_request" },
+        "request_id": { "type": "string", "minLength": 1 },
+        "project_id": { "type": "string", "minLength": 1 },
+        "task_profile_digest": { "$ref": "#/definitions/digest" },
+        "cpu_cores": { "type": "integer", "minimum": 0 },
+        "memory_bytes": { "type": "integer", "minimum": 0 },
+        "disk_bytes": { "type": "integer", "minimum": 0 },
+        "gpu_count": { "type": "integer", "minimum": 0 },
+        "minimum_gpu_memory_bytes": { "type": "integer", "minimum": 0 },
+        "maximum_wall_seconds": { "type": "integer", "exclusiveMinimum": 0 },
+        "output_path_digest": { "$ref": "#/definitions/digest" },
+        "request_digest": { "$ref": "#/definitions/digest" }
+      }
+    },
+    "quota_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version", "kind", "snapshot_id", "project_id", "provider",
+        "exact_model", "quota_kind", "pool_id", "remaining_units",
+        "reserved_units", "reset_at", "observed_at", "maximum_age_seconds",
+        "source_reference", "source_receipt_digest", "snapshot_digest"
+      ],
+      "properties": {
+        "schema_version": { "const": "0.1.0" },
+        "kind": { "const": "quota_snapshot_receipt" },
+        "snapshot_id": { "type": "string", "minLength": 1 },
+        "project_id": { "type": "string", "minLength": 1 },
+        "provider": { "type": "string", "minLength": 1 },
+        "exact_model": { "type": "string", "minLength": 1 },
+        "quota_kind": { "type": "string", "minLength": 1 },
+        "pool_id": { "type": "string", "minLength": 1 },
+        "remaining_units": { "type": "integer", "minimum": 0 },
+        "reserved_units": { "type": "integer", "minimum": 0 },
+        "reset_at": { "type": ["string", "null"] },
+        "observed_at": { "type": "string", "minLength": 1 },
+        "maximum_age_seconds": { "type": "integer", "exclusiveMinimum": 0 },
+        "source_reference": { "type": "string", "minLength": 1 },
+        "source_receipt_digest": { "$ref": "#/definitions/digest" },
+        "snapshot_digest": { "$ref": "#/definitions/digest" }
+      }
+    },
+    "foundry_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version", "kind", "task_profile_digest", "agent_instance_digest",
+        "cps_recipe_digest", "route_manifest_digest", "lane_profile_digest",
+        "resource_request_digest", "quota_snapshot_digest",
+        "builder_backend_evidence_digest", "worktree_lease_digest", "worktree_fence",
+        "plan_digest", "assignment_digest", "adapter_digest", "binding_digest"
+      ],
+      "properties": {
+        "schema_version": { "const": "cpslab_lad_binding/0.1.0" },
+        "kind": { "const": "lad_packet_binding" },
+        "task_profile_digest": { "$ref": "#/definitions/digest" },
+        "agent_instance_digest": { "$ref": "#/definitions/digest" },
+        "cps_recipe_digest": { "$ref": "#/definitions/digest" },
+        "route_manifest_digest": { "$ref": "#/definitions/digest" },
+        "lane_profile_digest": { "$ref": "#/definitions/digest" },
+        "resource_request_digest": { "$ref": "#/definitions/digest" },
+        "quota_snapshot_digest": { "$ref": "#/definitions/digest" },
+        "builder_backend_evidence_digest": { "$ref": "#/definitions/digest" },
+        "worktree_lease_digest": { "$ref": "#/definitions/digest" },
+        "worktree_fence": { "type": "integer", "minimum": 1 },
+        "plan_digest": { "$ref": "#/definitions/digest" },
+        "assignment_digest": { "$ref": "#/definitions/digest" },
+        "adapter_digest": { "$ref": "#/definitions/digest" },
+        "binding_digest": { "$ref": "#/definitions/digest" }
+      }
+    }
+  }
+}

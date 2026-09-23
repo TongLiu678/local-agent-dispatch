@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "local-agent-dispatch/capability_snapshot.schema.json",
+  "title": "CapabilitySnapshot v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "api_version", "snapshot_id", "host_id", "worker_id",
+    "capabilities", "observed_at", "ttl_seconds", "source", "confidence",
+    "sequence", "idempotency_key", "fence_token"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "api_version": {"const": "local-agent-dispatch.worker.v1"},
+    "snapshot_id": {"$ref": "#/$defs/id"},
+    "host_id": {"$ref": "#/$defs/id"},
+    "worker_id": {"$ref": "#/$defs/id"},
+    "capabilities": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/capability"}
+    },
+    "observed_at": {"type": "string", "format": "date-time"},
+    "ttl_seconds": {"type": ["integer", "null"], "minimum": 1},
+    "source": {"type": "string", "minLength": 1},
+    "confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+    "sequence": {"type": "integer", "minimum": 1},
+    "idempotency_key": {"$ref": "#/$defs/id"},
+    "fence_token": {"type": "integer", "minimum": 1}
+  },
+  "$defs": {
+    "id": {
+      "type": "string", "minLength": 1, "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:@-]{0,127}$"
+    },
+    "capability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["capability_id", "kind", "status", "version", "constraints"],
+      "properties": {
+        "capability_id": {"$ref": "#/$defs/id"},
+        "kind": {
+          "enum": [
+            "runtime", "transport", "validator", "scheduler", "accelerator",
+            "filesystem", "worker", "other"
+          ]
+        },
+        "status": {"enum": ["available", "unavailable", "blocked", "unknown"]},
+        "version": {"type": ["string", "null"], "minLength": 1},
+        "constraints": {
+          "type": "array", "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,73 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+.env
+.env.*
+
+# Runtime/private control-plane state must stay outside a public repository.
+AGENTS.md
+audit_report.txt
+hosts.json
+preflight-state*.json
+runtime-state*.json
+model-state*.json
+compute-state*.json
+server-local-deployment*.json
+events.jsonl
+logs/
+runs/
+task-packets/
+artifacts/
+task-prompt*.md
+runner-summary*.json
+
+# Python build and test outputs.
+*.egg-info/
+build/
+dist/
+*.whl
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Editor, OS, and temporary files.
+.idea/
+.vscode/
+.DS_Store
+._*
+*.swp
+*.swo
+*.tmp
+*.bak
+
+# Local diagnostics and model/runtime snapshots. Keep public fixtures explicit.
+*.log
+*.snapshot.json
+*.report.json
+*.state.json
+*-snapshot.json
+*-report.json
+*-state.json
+.codebase-memory/
+.hermes/
+
+# Private remote execution workspaces and per-lane state.
+server-home/
+remote-workspace/
+downloads/
+.lad-agent-results/
+*.db
+*.db-wal
+*.db-shm
+
+# Common credential material. This is a guardrail, not a substitute for review.
+*.pem
+*.key
+*.p12
+*.pfx

@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local-agent-dispatch.dev/schemas/skill_composition_plan.schema.json",
+  "title": "Skill Composition Plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "api_version",
+    "plan_id",
+    "request_id",
+    "index_id",
+    "index_generated_at",
+    "index_source_digest",
+    "generated_at",
+    "k",
+    "eligible_skill_count",
+    "selected",
+    "covered_capabilities",
+    "covered_facets",
+    "total_estimated_cost",
+    "mean_uncertainty",
+    "objective",
+    "hard_filter_counts"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "api_version": {"const": "local-agent-dispatch.skill-composition-plan.v1"},
+    "plan_id": {"$ref": "#/$defs/identifier"},
+    "request_id": {"$ref": "#/$defs/identifier"},
+    "index_id": {"$ref": "#/$defs/identifier"},
+    "index_generated_at": {"type": "string", "format": "date-time"},
+    "index_source_digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "generated_at": {"type": "string", "format": "date-time"},
+    "k": {"enum": [3, 5, 10]},
+    "eligible_skill_count": {"type": "integer", "minimum": 3},
+    "selected": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 10,
+      "items": {"$ref": "#/$defs/planned_skill"}
+    },
+    "covered_capabilities": {"$ref": "#/$defs/tags"},
+    "covered_facets": {"$ref": "#/$defs/tags"},
+    "total_estimated_cost": {"type": "number", "minimum": 0},
+    "mean_uncertainty": {"type": "number", "minimum": 0, "maximum": 1},
+    "objective": {"$ref": "#/$defs/objective"},
+    "hard_filter_counts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["reason", "count"],
+        "properties": {
+          "reason": {"$ref": "#/$defs/identifier"},
+          "count": {"type": "integer", "minimum": 1}
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"k": {"const": 3}}, "required": ["k"]},
+      "then": {"properties": {"selected": {"minItems": 3, "maxItems": 3}}}
+    },
+    {
+      "if": {"properties": {"k": {"const": 5}}, "required": ["k"]},
+      "then": {"properties": {"selected": {"minItems": 5, "maxItems": 5}}}
+    },
+    {
+      "if": {"properties": {"k": {"const": 10}}, "required": ["k"]},
+      "then": {"properties": {"selected": {"minItems": 10, "maxItems": 10}}}
+    }
+  ],
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:@-]{0,127}$"
+    },
+    "tag": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._:-]{0,63}$"
+    },
+    "tags": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/tag"}
+    },
+    "planned_skill": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rank",
+        "skill_id",
+        "version",
+        "similarity",
+        "marginal_capabilities",
+        "marginal_facets",
+        "estimated_cost",
+        "uncertainty",
+        "selection_score"
+      ],
+      "properties": {
+        "rank": {"type": "integer", "minimum": 1, "maximum": 10},
+        "skill_id": {"$ref": "#/$defs/identifier"},
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-((?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\\+([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?$"
+        },
+        "similarity": {"type": "number", "minimum": -1, "maximum": 1},
+        "marginal_capabilities": {"$ref": "#/$defs/tags"},
+        "marginal_facets": {"$ref": "#/$defs/tags"},
+        "estimated_cost": {"type": "number", "minimum": 0},
+        "uncertainty": {"type": "number", "minimum": 0, "maximum": 1},
+        "selection_score": {"type": "number"}
+      }
+    },
+    "objective": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required_coverage",
+        "desired_facet_coverage",
+        "mean_relevance",
+        "complementarity",
+        "redundancy",
+        "normalized_cost",
+        "mean_uncertainty",
+        "total"
+      ],
+      "properties": {
+        "required_coverage": {"type": "number", "minimum": 0, "maximum": 1},
+        "desired_facet_coverage": {"type": "number", "minimum": 0, "maximum": 1},
+        "mean_relevance": {"type": "number", "minimum": 0, "maximum": 1},
+        "complementarity": {"type": "number", "minimum": 0, "maximum": 1},
+        "redundancy": {"type": "number", "minimum": 0, "maximum": 1},
+        "normalized_cost": {"type": "number", "minimum": 0, "maximum": 1},
+        "mean_uncertainty": {"type": "number", "minimum": 0, "maximum": 1},
+        "total": {"type": "number"}
+      }
+    }
+  }
+}

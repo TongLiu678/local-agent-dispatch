@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "local-agent-dispatch/continuous_run.schema.json",
+  "title": "Continuous Run Manifest",
+  "description": "A bounded, resumable execution window. It is not evidence that a provider or scientific claim has been validated.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "mode",
+    "evidence_level",
+    "source_digest",
+    "policy_digest",
+    "capsule_digest",
+    "planned_end_at",
+    "stop_conditions",
+    "validator_id"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "run_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$"},
+    "mission_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$"},
+    "mode": {"enum": ["offline_soak", "shadow", "canary", "soak"]},
+    "evidence_level": {"enum": ["E0", "E1", "E2", "E3", "E4"]},
+    "source_digest": {"$ref": "#/$defs/sha256_digest"},
+    "policy_digest": {"$ref": "#/$defs/sha256_digest"},
+    "capsule_digest": {"$ref": "#/$defs/sha256_digest"},
+    "fault_schedule_digest": {"$ref": "#/$defs/sha256_digest"},
+    "segment_seconds": {"type": "integer", "minimum": 60, "maximum": 86400},
+    "scheduler_max_wall_seconds": {"type": "integer", "minimum": 60},
+    "start_at": {"type": "string", "format": "date-time"},
+    "planned_end_at": {"type": "string", "format": "date-time"},
+    "provider_execution": {"type": "boolean"},
+    "network_execution": {"type": "boolean"},
+    "validator_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"},
+    "scheduler": {"type": "object"},
+    "host_fingerprint": {"type": "object"},
+    "metadata": {"type": "object"},
+    "stop_conditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "accepted_task_loss",
+        "duplicate_irreversible_effect",
+        "unowned_process_signal",
+        "oom_or_enospc_unrecorded"
+      ],
+      "properties": {
+        "accepted_task_loss": {"type": "integer", "minimum": 0},
+        "duplicate_irreversible_effect": {"type": "integer", "minimum": 0},
+        "unowned_process_signal": {"type": "integer", "minimum": 0},
+        "oom_or_enospc_unrecorded": {"type": "integer", "minimum": 0}
+      }
+    }
+  },
+  "$defs": {
+    "sha256_digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  }
+}

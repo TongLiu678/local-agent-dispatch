@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "source": "user_console_export",
+  "observed_at_utc": "2026-08-12T10:00:00Z",
+  "pool_id": "opencode.go",
+  "provider_id": "opencode-go",
+  "overage_fallback_state": "disabled",
+  "windows": {
+    "five_hour": {
+      "remaining_percent": 82.0,
+      "remaining_amount": 4100,
+      "cap_amount": 5000,
+      "reset_at_utc": "2026-08-12T12:00:00Z"
+    },
+    "weekly": {
+      "remaining_percent": 55.0,
+      "remaining_amount": 5500,
+      "cap_amount": 10000,
+      "reset_at_utc": "2026-08-14T00:00:00Z"
+    },
+    "monthly": {
+      "remaining_percent": 30.0,
+      "remaining_amount": 15000,
+      "cap_amount": 50000,
+      "reset_at_utc": "2026-09-01T00:00:00Z"
+    }
+  },
+  "zen_balance": {
+    "state": "available",
+    "amount_usd": 1.25,
+    "currency": "USD",
+    "note": "Separate Zen wallet balance; not OpenCode Go subscription quota."
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Runtime State",
+  "type": "object",
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "run_id": { "type": ["string", "null"] },
+    "active_segment_id": { "type": ["string", "null"] },
+    "segment_sequence": { "type": ["integer", "null"], "minimum": 1 },
+    "last_checkpoint_id": { "type": ["string", "null"] },
+    "last_checkpoint_digest": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+    "controller_fence_token": { "type": ["integer", "null"], "minimum": 0 }
+  },
+  "required": ["schema_version"]
+}

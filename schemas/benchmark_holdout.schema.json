@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://local-agent-dispatch.dev/schemas/benchmark_holdout.schema.json",
+  "title": "Local Agent Dispatch benchmark holdout manifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "manifest_type",
+    "benchmark_id",
+    "corpus_sha256",
+    "selection_rule",
+    "holdout_count",
+    "holdout_ids",
+    "holdout_rows",
+    "holdout_sha256",
+    "label_status",
+    "human_gold_frozen",
+    "read_only"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "manifest_type": {"const": "local-agent-dispatch.benchmark_holdout"},
+    "benchmark_id": {"type": "string", "minLength": 1},
+    "corpus_schema_version": {"type": "integer", "minimum": 1},
+    "corpus_path": {"type": ["string", "null"]},
+    "corpus_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "selection_rule": {"type": "string", "minLength": 1},
+    "holdout_count": {"type": "integer", "minimum": 1},
+    "holdout_ids": {"type": "array", "items": {"type": "string"}},
+    "holdout_rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["mission_id", "stratum", "row_sha256"],
+        "properties": {
+          "mission_id": {"type": "string"},
+          "stratum": {"type": "string"},
+          "row_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "holdout_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "label_status": {"const": "provisional_machine_only"},
+    "human_gold_frozen": {"const": false},
+    "read_only": {"const": true}
+  },
+  "additionalProperties": true
+}

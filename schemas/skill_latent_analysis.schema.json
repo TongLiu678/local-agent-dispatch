@@ -1,0 +1,211 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local-agent-dispatch.dev/schemas/skill_latent_analysis.schema.json",
+  "title": "Skill Latent Analysis",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "api_version",
+    "analysis_id",
+    "index_id",
+    "index_generated_at",
+    "analyzed_at",
+    "analyzed_skill_count",
+    "excluded_skill_counts",
+    "pairwise",
+    "redundancy",
+    "coverage"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "api_version": {"const": "local-agent-dispatch.skill-latent-analysis.v1"},
+    "analysis_id": {"$ref": "#/$defs/identifier"},
+    "index_id": {"$ref": "#/$defs/identifier"},
+    "index_generated_at": {"type": "string", "format": "date-time"},
+    "analyzed_at": {"type": "string", "format": "date-time"},
+    "analyzed_skill_count": {"type": "integer", "minimum": 1},
+    "excluded_skill_counts": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/excluded_count"}
+    },
+    "pairwise": {"$ref": "#/$defs/pairwise"},
+    "redundancy": {"$ref": "#/$defs/redundancy"},
+    "coverage": {"$ref": "#/$defs/coverage"}
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:@-]{0,127}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-((?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\\+([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?$"
+    },
+    "tag": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._:-]{0,63}$"
+    },
+    "cosine_or_null": {
+      "oneOf": [
+        {"type": "number", "minimum": -1, "maximum": 1},
+        {"type": "null"}
+      ]
+    },
+    "excluded_count": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reason", "count"],
+      "properties": {
+        "reason": {"enum": ["availability_disabled", "availability_unknown"]},
+        "count": {"type": "integer", "minimum": 1}
+      }
+    },
+    "pair": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "left_skill_id",
+        "left_version",
+        "right_skill_id",
+        "right_version",
+        "cosine",
+        "redundant"
+      ],
+      "properties": {
+        "left_skill_id": {"$ref": "#/$defs/identifier"},
+        "left_version": {"$ref": "#/$defs/version"},
+        "right_skill_id": {"$ref": "#/$defs/identifier"},
+        "right_version": {"$ref": "#/$defs/version"},
+        "cosine": {"type": "number", "minimum": -1, "maximum": 1},
+        "redundant": {"type": "boolean"}
+      }
+    },
+    "pairwise": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_count",
+        "returned_count",
+        "limit",
+        "truncated",
+        "cosine",
+        "pairs"
+      ],
+      "properties": {
+        "total_count": {"type": "integer", "minimum": 0},
+        "returned_count": {"type": "integer", "minimum": 0, "maximum": 1000},
+        "limit": {"type": "integer", "minimum": 1, "maximum": 1000},
+        "truncated": {"type": "boolean"},
+        "cosine": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mean", "minimum", "maximum"],
+          "properties": {
+            "mean": {"$ref": "#/$defs/cosine_or_null"},
+            "minimum": {"$ref": "#/$defs/cosine_or_null"},
+            "maximum": {"$ref": "#/$defs/cosine_or_null"}
+          }
+        },
+        "pairs": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {"$ref": "#/$defs/pair"}
+        }
+      }
+    },
+    "skill_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skill_id", "version"],
+      "properties": {
+        "skill_id": {"$ref": "#/$defs/identifier"},
+        "version": {"$ref": "#/$defs/version"}
+      }
+    },
+    "group": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "group_id",
+        "members",
+        "qualifying_pair_count",
+        "minimum_qualifying_cosine",
+        "maximum_qualifying_cosine"
+      ],
+      "properties": {
+        "group_id": {"$ref": "#/$defs/identifier"},
+        "members": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/skill_ref"}
+        },
+        "qualifying_pair_count": {"type": "integer", "minimum": 1},
+        "minimum_qualifying_cosine": {"type": "number", "minimum": -1, "maximum": 1},
+        "maximum_qualifying_cosine": {"type": "number", "minimum": -1, "maximum": 1}
+      }
+    },
+    "redundancy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "threshold",
+        "pair_count",
+        "returned_pair_count",
+        "pairs_truncated",
+        "pairs",
+        "group_count",
+        "groups"
+      ],
+      "properties": {
+        "threshold": {"type": "number", "minimum": 0, "maximum": 1},
+        "pair_count": {"type": "integer", "minimum": 0},
+        "returned_pair_count": {"type": "integer", "minimum": 0, "maximum": 1000},
+        "pairs_truncated": {"type": "boolean"},
+        "pairs": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {"$ref": "#/$defs/pair"}
+        },
+        "group_count": {"type": "integer", "minimum": 0},
+        "groups": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/group"}
+        }
+      }
+    },
+    "tag_coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "skill_count", "fraction"],
+      "properties": {
+        "name": {"$ref": "#/$defs/tag"},
+        "skill_count": {"type": "integer", "minimum": 1},
+        "fraction": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "unique_capability_count",
+        "capabilities",
+        "unique_facet_count",
+        "facets"
+      ],
+      "properties": {
+        "unique_capability_count": {"type": "integer", "minimum": 0},
+        "capabilities": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/tag_coverage"}
+        },
+        "unique_facet_count": {"type": "integer", "minimum": 0},
+        "facets": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/tag_coverage"}
+        }
+      }
+    }
+  }
+}

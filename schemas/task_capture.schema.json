@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Local Agent Dispatch Task Capture",
+  "type": "object",
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "capture": { "const": "bounded-task-capture" },
+    "read_only": { "const": true },
+    "provider_prompts_sent": { "const": false },
+    "project_executed": { "const": false },
+    "task_id": { "type": "string", "minLength": 1 },
+    "task_family": { "type": "string", "minLength": 1 },
+    "dag": { "type": "object" },
+    "planner_jobs": { "type": "array" },
+    "estimate": { "type": "object" },
+    "unknown_semantics": { "type": "object" }
+  },
+  "required": [
+    "schema_version",
+    "capture",
+    "read_only",
+    "provider_prompts_sent",
+    "project_executed",
+    "task_id",
+    "task_family",
+    "dag",
+    "planner_jobs",
+    "estimate",
+    "unknown_semantics"
+  ],
+  "additionalProperties": true
+}

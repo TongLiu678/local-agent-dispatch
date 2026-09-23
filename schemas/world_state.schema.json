@@ -1,0 +1,230 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "World State Snapshot (Resource Digital Twin)",
+  "description": "Schema-versioned projection of hosts, mounts, routes, runtimes, and observations for the world-state plane. Unknown values are omitted (None) and must never be fabricated. Capacity, allocatable, available-now, reserved, and safe-to-place remain distinct; safe-to-place is derived by the placement gate in resources/topology.py.",
+  "type": "object",
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "hosts": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/host" }
+    },
+    "routes": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/route" }
+    },
+    "observations": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/observation" }
+    }
+  },
+  "required": ["schema_version"],
+  "definitions": {
+    "observation": {
+      "type": "object",
+      "properties": {
+        "kind": { "type": "string" },
+        "source": { "type": "string" },
+        "observed_at": { "type": "string", "format": "date-time" },
+        "evidence": { "type": "array", "items": { "type": "string" } },
+        "ttl_seconds": { "type": ["number", "null"] },
+        "confidence": { "type": ["number", "null"] }
+      },
+      "required": ["kind", "source", "observed_at"]
+    },
+    "resource_values": {
+      "type": "object",
+      "properties": {
+        "units": { "type": "string" },
+        "capacity": { "type": ["number", "null"] },
+        "allocatable": { "type": ["number", "null"] },
+        "available_now": { "type": ["number", "null"] },
+        "reserved": { "type": ["number", "null"] },
+        "used": { "type": ["number", "null"] }
+      },
+      "required": ["units"]
+    },
+    "numa_node": {
+      "type": "object",
+      "properties": {
+        "node_id": { "type": "string" },
+        "cpu_ids": { "type": "array", "items": { "type": "string" } },
+        "ram_bytes": { "type": ["integer", "null"] }
+      },
+      "required": ["node_id"]
+    },
+    "numa_topology": {
+      "type": "object",
+      "properties": {
+        "nodes": { "type": "array", "items": { "$ref": "#/definitions/numa_node" } },
+        "distances": {
+          "type": ["array", "null"],
+          "items": { "type": "array", "items": { "type": "integer" } }
+        }
+      }
+    },
+    "cpu": {
+      "type": "object",
+      "properties": {
+        "sockets": { "type": ["integer", "null"] },
+        "cores": { "type": ["integer", "null"] },
+        "threads": { "type": ["integer", "null"] },
+        "model": { "type": ["string", "null"] },
+        "numa": { "$ref": "#/definitions/numa_topology" },
+        "observation": { "$ref": "#/definitions/observation" }
+      }
+    },
+    "ram": {
+      "type": "object",
+      "properties": {
+        "values": { "$ref": "#/definitions/resource_values" },
+        "cgroup_limit_bytes": { "type": ["integer", "null"] },
+        "cgroup_current_bytes": { "type": ["integer", "null"] },
+        "observation": { "$ref": "#/definitions/observation" }
+      },
+      "required": ["values"]
+    },
+    "gpu_process": {
+      "type": "object",
+      "properties": {
+        "pid": { "type": "integer" },
+        "name": { "type": "string" },
+        "vram_mib": { "type": ["integer", "null"] }
+      },
+      "required": ["pid", "name"]
+    },
+    "gpu": {
+      "type": "object",
+      "properties": {
+        "index": { "type": "string" },
+        "model": { "type": ["string", "null"] },
+        "vram": { "$ref": "#/definitions/resource_values" },
+        "processes": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/gpu_process" }
+        },
+        "cuda_compatible": { "type": ["boolean", "null"] },
+        "observation": { "$ref": "#/definitions/observation" }
+      },
+      "required": ["index"]
+    },
+    "quota": {
+      "type": "object",
+      "properties": {
+        "kind": { "type": "string" },
+        "unit": { "type": "string" },
+        "limit": { "type": ["number", "null"] },
+        "used": { "type": ["number", "null"] },
+        "free": { "type": ["number", "null"] },
+        "source": { "type": ["string", "null"] }
+      },
+      "required": ["kind", "unit"]
+    },
+    "mount": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string" },
+        "device": { "type": ["string", "null"] },
+        "fs_type": { "type": ["string", "null"] },
+        "options": { "type": "array", "items": { "type": "string" } },
+        "writable": { "type": ["boolean", "null"] },
+        "probed_path": { "type": ["string", "null"] },
+        "values": { "$ref": "#/definitions/resource_values" },
+        "free_bytes": { "type": ["integer", "null"] },
+        "free_inodes": { "type": ["integer", "null"] },
+        "quota": { "$ref": "#/definitions/quota" },
+        "observation": { "$ref": "#/definitions/observation" }
+      },
+      "required": ["path"]
+    },
+    "runtime": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": ["string", "null"] },
+        "compatible": { "type": ["boolean", "null"] },
+        "cuda_supported": { "type": ["boolean", "null"] },
+        "observation": { "$ref": "#/definitions/observation" }
+      },
+      "required": ["name"]
+    },
+    "cache": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string" },
+        "mount_path": { "type": ["string", "null"] },
+        "declared_bytes": { "type": ["integer", "null"] },
+        "observation": { "$ref": "#/definitions/observation" }
+      },
+      "required": ["path"]
+    },
+    "dataset": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "path": { "type": "string" },
+        "mount_path": { "type": ["string", "null"] },
+        "bytes_total": { "type": ["integer", "null"] },
+        "classification": { "type": ["string", "null"] },
+        "observation": { "$ref": "#/definitions/observation" }
+      },
+      "required": ["name", "path"]
+    },
+    "route": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["control", "artifact", "bulk_data", "execution", "workload"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["direct", "bastion", "proxy", "relay", "unknown"]
+        },
+        "verified_at": { "type": ["string", "null"], "format": "date-time" },
+        "evidence": { "type": "array", "items": { "type": "string" } },
+        "peer": { "type": ["string", "null"] },
+        "rtt_ms": { "type": ["number", "null"] },
+        "throughput_mbps": { "type": ["number", "null"] },
+        "ssh_config": { "type": ["string", "null"] },
+        "observation": { "$ref": "#/definitions/observation" }
+      },
+      "required": ["kind", "status"]
+    },
+    "host": {
+      "type": "object",
+      "properties": {
+        "host_id": { "type": "string" },
+        "name": { "type": "string" },
+        "os": { "type": ["string", "null"] },
+        "arch": { "type": ["string", "null"] },
+        "kernel_release": { "type": ["string", "null"] },
+        "execution_host": { "type": ["boolean", "null"] },
+        "workload_host": { "type": ["boolean", "null"] },
+        "cpu": { "$ref": "#/definitions/cpu" },
+        "ram": { "$ref": "#/definitions/ram" },
+        "gpus": { "type": "array", "items": { "$ref": "#/definitions/gpu" } },
+        "mounts": { "type": "array", "items": { "$ref": "#/definitions/mount" } },
+        "runtimes": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/runtime" }
+        },
+        "caches": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/cache" }
+        },
+        "datasets": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/dataset" }
+        },
+        "observations": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/observation" }
+        },
+        "labels": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["host_id", "name"]
+    }
+  }
+}

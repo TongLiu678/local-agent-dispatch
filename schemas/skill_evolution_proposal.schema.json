@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local-agent-dispatch.dev/schemas/skill_evolution_proposal.schema.json",
+  "title": "Skill Evolution Proposal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "api_version",
+    "proposal_id",
+    "created_at",
+    "target",
+    "operation",
+    "based_on_outcome_ids",
+    "capability_additions",
+    "capability_removals",
+    "facet_additions",
+    "facet_removals",
+    "estimated_cost_delta",
+    "uncertainty_delta",
+    "rationale_codes",
+    "evidence_refs",
+    "status"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "api_version": {"const": "local-agent-dispatch.skill-evolution-proposal.v1"},
+    "proposal_id": {"$ref": "#/$defs/identifier"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "target": {"$ref": "#/$defs/skill_ref"},
+    "operation": {"enum": ["revise_metadata", "merge_metadata", "split_metadata"]},
+    "based_on_outcome_ids": {"$ref": "#/$defs/nonempty_identifiers"},
+    "capability_additions": {"$ref": "#/$defs/identifiers"},
+    "capability_removals": {"$ref": "#/$defs/identifiers"},
+    "facet_additions": {"$ref": "#/$defs/identifiers"},
+    "facet_removals": {"$ref": "#/$defs/identifiers"},
+    "estimated_cost_delta": {"type": "number"},
+    "uncertainty_delta": {"type": "number", "minimum": -1, "maximum": 1},
+    "rationale_codes": {"$ref": "#/$defs/nonempty_identifiers"},
+    "evidence_refs": {"$ref": "#/$defs/nonempty_identifiers"},
+    "status": {"const": "proposed"}
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:@-]{0,127}$"
+    },
+    "identifiers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/identifier"}
+    },
+    "nonempty_identifiers": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/identifier"}
+    },
+    "skill_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skill_id", "version"],
+      "properties": {
+        "skill_id": {"$ref": "#/$defs/identifier"},
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-((?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\\+([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?$"
+        }
+      }
+    }
+  }
+}

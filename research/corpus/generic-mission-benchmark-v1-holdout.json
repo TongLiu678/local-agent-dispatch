@@ -1,0 +1,66 @@
+{
+  "benchmark_id": "generic-mission-benchmark-v1",
+  "corpus_path": "research/corpus/generic-mission-benchmark-v1.json",
+  "corpus_schema_version": 1,
+  "corpus_sha256": "436053c8e0315bf086a899dd07094fe5d0a3556a00b9cdf477dfa4cd4a42ba91",
+  "holdout_count": 8,
+  "holdout_ids": [
+    "g0-01-classify-log-lines",
+    "g0-02-normalize-schema",
+    "g1-01-parser-regression",
+    "g1-02-unit-test-addition",
+    "g2-01-adapter-contract",
+    "g2-02-state-migration",
+    "g3-01-source-synthesis",
+    "g3-02-architecture-review"
+  ],
+  "holdout_rows": [
+    {
+      "mission_id": "g0-01-classify-log-lines",
+      "row_sha256": "8ea30cc1da59bbf98e975336ffb60de75db8f20c85af6d0872e1a054f2192da1",
+      "stratum": "S0"
+    },
+    {
+      "mission_id": "g0-02-normalize-schema",
+      "row_sha256": "4328fb48b78f32de066f17ef0369a85a7de3dfbd0f195b92718036301d97546c",
+      "stratum": "S0"
+    },
+    {
+      "mission_id": "g1-01-parser-regression",
+      "row_sha256": "706b9a4dc70351a7ca6228fb5c6c6e26b80e77f0ab3295abebddf7595483ff5b",
+      "stratum": "S1"
+    },
+    {
+      "mission_id": "g1-02-unit-test-addition",
+      "row_sha256": "f222f5335966c699d02de14fe2ff9133315c22706dee5f10e13beec391b48b30",
+      "stratum": "S1"
+    },
+    {
+      "mission_id": "g2-01-adapter-contract",
+      "row_sha256": "5de9fb87935efe70706d7507df78cbb610e3bd801beabe517fc23d70d7d48d5c",
+      "stratum": "S2"
+    },
+    {
+      "mission_id": "g2-02-state-migration",
+      "row_sha256": "7f68c2a3279697819a29ac1a3c8f74bf43702ef15583cdc62772a6f7aa955c89",
+      "stratum": "S2"
+    },
+    {
+      "mission_id": "g3-01-source-synthesis",
+      "row_sha256": "842439e39b4f464111257353798d52b9268bf65d1cfae556e9008acdce9c41fe",
+      "stratum": "S3"
+    },
+    {
+      "mission_id": "g3-02-architecture-review",
+      "row_sha256": "df7350f35df684478217f97bc64bb4b9718605c2d471f7f6b390599bb0f71682",
+      "stratum": "S3"
+    }
+  ],
+  "holdout_sha256": "4894ca4e226bc9fbc06a9b30994825b08e18cfa50b25c455de871b87b6643482",
+  "human_gold_frozen": false,
+  "label_status": "provisional_machine_only",
+  "manifest_type": "local-agent-dispatch.benchmark_holdout",
+  "read_only": true,
+  "schema_version": 1,
+  "selection_rule": "first two records of each stratum are holdout"
+}
